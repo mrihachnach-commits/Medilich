@@ -214,19 +214,19 @@ export const SmartAnalytics: React.FC<SmartAnalyticsProps> = ({ events, settings
           <div className="flex items-center gap-2 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 w-full sm:w-auto justify-between sm:justify-end">
             <button
               onClick={handlePrevDate}
-              className="p-1 text-slate-400 hover:text-slate-100 hover:bg-slate-800 rounded-lg transition-colors"
+              className="p-1.5 text-slate-400 hover:text-slate-100 hover:bg-slate-800 rounded-lg transition-colors"
               title="Thời gian trước"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
 
-            <span className="font-bold text-indigo-300 font-mono text-center min-w-[150px] text-xs">
+            <span className="font-bold text-indigo-300 font-mono text-center flex-1 sm:flex-initial min-w-[120px] text-xs">
               {viewScope === 'week' ? weekRangeText : monthText}
             </span>
 
             <button
               onClick={handleNextDate}
-              className="p-1 text-slate-400 hover:text-slate-100 hover:bg-slate-800 rounded-lg transition-colors"
+              className="p-1.5 text-slate-400 hover:text-slate-100 hover:bg-slate-800 rounded-lg transition-colors"
               title="Thời gian tiếp"
             >
               <ChevronRight className="w-4 h-4" />
@@ -234,7 +234,7 @@ export const SmartAnalytics: React.FC<SmartAnalyticsProps> = ({ events, settings
 
             <button
               onClick={handleResetToday}
-              className="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded-md transition-colors flex items-center gap-1 ml-1"
+              className="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded-md transition-colors flex items-center gap-1 ml-1 shrink-0"
               title="Trở về mốc thời gian hiện tại"
             >
               <RotateCcw className="w-3 h-3 text-indigo-400" />

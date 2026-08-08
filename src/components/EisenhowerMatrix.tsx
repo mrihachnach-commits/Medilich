@@ -285,24 +285,24 @@ export const EisenhowerMatrix: React.FC<EisenhowerMatrixProps> = ({
   return (
     <div className="space-y-4">
       {/* Overview Intro */}
-      <div className="bg-[#0F172A] border border-slate-800 rounded-2xl p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="bg-[#0F172A] border border-slate-800 rounded-2xl p-3.5 sm:p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <h2 className="font-bold text-slate-100 text-base">Ma Trận Ưu Tiên Eisenhower</h2>
+          <h2 className="font-bold text-slate-100 text-sm sm:text-base">Ma Trận Ưu Tiên Eisenhower</h2>
           <p className="text-xs text-slate-400 mt-0.5">
-            Phân loại linh hoạt theo mong muốn người dùng (Bệnh viện, Học tập, Phòng khám, Nghỉ ngơi P1-P4). Click chiếc bút ✏️ để chỉnh sửa nội dung bất kỳ!
+            Phân loại linh hoạt theo mong muốn người dùng (Bệnh viện, Học tập, Phòng khám, Nghỉ ngơi P1-P4).
           </p>
         </div>
-        <div className="flex items-center gap-2 text-xs flex-wrap">
-          <span className="bg-rose-950 text-rose-300 border border-rose-800 px-2 py-0.5 rounded-lg font-medium text-[11px]" title={settings?.prioritySettings?.P1?.subtitle}>
+        <div className="flex items-center gap-1.5 sm:gap-2 text-xs flex-wrap">
+          <span className="bg-rose-950 text-rose-300 border border-rose-800 px-2 py-0.5 rounded-lg font-medium text-[10px] sm:text-[11px]" title={settings?.prioritySettings?.P1?.subtitle}>
             {settings?.prioritySettings?.P1?.name || 'P1: Can thiệp khẩn'}
           </span>
-          <span className="bg-purple-950 text-purple-300 border border-purple-800 px-2 py-0.5 rounded-lg font-medium text-[11px]" title={settings?.prioritySettings?.P2?.subtitle}>
+          <span className="bg-purple-950 text-purple-300 border border-purple-800 px-2 py-0.5 rounded-lg font-medium text-[10px] sm:text-[11px]" title={settings?.prioritySettings?.P2?.subtitle}>
             {settings?.prioritySettings?.P2?.name || 'P2: Học tập chuyên sâu'}
           </span>
-          <span className="bg-slate-800 text-slate-300 border border-slate-700 px-2 py-0.5 rounded-lg font-medium text-[11px]" title={settings?.prioritySettings?.P3?.subtitle}>
+          <span className="bg-slate-800 text-slate-300 border border-slate-700 px-2 py-0.5 rounded-lg font-medium text-[10px] sm:text-[11px]" title={settings?.prioritySettings?.P3?.subtitle}>
             {settings?.prioritySettings?.P3?.name || 'P3: Thường quy'}
           </span>
-          <span className="bg-amber-950 text-amber-300 border border-amber-800 px-2 py-0.5 rounded-lg font-medium text-[11px]" title={settings?.prioritySettings?.P4?.subtitle}>
+          <span className="bg-amber-950 text-amber-300 border border-amber-800 px-2 py-0.5 rounded-lg font-medium text-[10px] sm:text-[11px]" title={settings?.prioritySettings?.P4?.subtitle}>
             {settings?.prioritySettings?.P4?.name || 'P4: Bảo vệ nghỉ ngơi'}
           </span>
         </div>
@@ -310,7 +310,7 @@ export const EisenhowerMatrix: React.FC<EisenhowerMatrixProps> = ({
 
       {/* Time Scope Filter Bar */}
       <div className="bg-[#0F172A] border border-slate-800 rounded-2xl p-3 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-        <div className="flex items-center gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800 w-full sm:w-auto">
+        <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 w-full sm:w-auto">
           <button
             onClick={() => setViewScope('week')}
             className={`flex-1 sm:flex-initial px-3 py-1.5 rounded-lg font-semibold transition-all flex items-center justify-center gap-1.5 ${
@@ -349,19 +349,19 @@ export const EisenhowerMatrix: React.FC<EisenhowerMatrixProps> = ({
           <div className="flex items-center gap-2 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 w-full sm:w-auto justify-between sm:justify-end">
             <button
               onClick={handlePrevDate}
-              className="p-1 text-slate-400 hover:text-slate-100 hover:bg-slate-800 rounded-lg transition-colors"
+              className="p-1.5 text-slate-400 hover:text-slate-100 hover:bg-slate-800 rounded-lg transition-colors"
               title="Thời gian trước"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
 
-            <span className="font-bold text-indigo-300 font-mono text-center min-w-[150px] text-xs">
+            <span className="font-bold text-indigo-300 font-mono text-center flex-1 sm:flex-initial min-w-[120px] text-xs">
               {viewScope === 'week' ? weekRangeText : monthText}
             </span>
 
             <button
               onClick={handleNextDate}
-              className="p-1 text-slate-400 hover:text-slate-100 hover:bg-slate-800 rounded-lg transition-colors"
+              className="p-1.5 text-slate-400 hover:text-slate-100 hover:bg-slate-800 rounded-lg transition-colors"
               title="Thời gian tiếp"
             >
               <ChevronRight className="w-4 h-4" />
@@ -369,7 +369,7 @@ export const EisenhowerMatrix: React.FC<EisenhowerMatrixProps> = ({
 
             <button
               onClick={handleResetToday}
-              className="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded-md transition-colors flex items-center gap-1 ml-1"
+              className="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded-md transition-colors flex items-center gap-1 ml-1 shrink-0"
               title="Trở về mốc thời gian hiện tại"
             >
               <RotateCcw className="w-3 h-3 text-indigo-400" />

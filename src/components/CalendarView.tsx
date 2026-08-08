@@ -532,12 +532,12 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
       {/* Navigation & Controls Bar */}
       <div className="bg-[#0F172A] border border-slate-800 rounded-2xl p-3.5 md:p-4 flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-3 shadow-lg">
         {/* Left: View Mode Toggle & Navigation */}
-        <div className="flex flex-wrap items-center justify-between xl:justify-start gap-3">
+        <div className="flex flex-wrap items-center justify-between xl:justify-start gap-2 sm:gap-3">
           {/* Main Mode Toggle: Week vs Month */}
-          <div className="bg-slate-950 p-1 rounded-xl border border-slate-800 flex items-center gap-1">
+          <div className="bg-slate-950 p-1 rounded-xl border border-slate-800 flex items-center gap-1 flex-1 sm:flex-initial">
             <button
               onClick={() => setMainViewMode('week')}
-              className={`px-3 py-1.5 text-xs font-bold rounded-lg flex items-center gap-1.5 transition-all ${
+              className={`flex-1 sm:flex-initial px-3 py-1.5 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 transition-all ${
                 mainViewMode === 'week'
                   ? 'bg-indigo-600 text-white shadow-md'
                   : 'text-slate-400 hover:text-slate-200'
@@ -549,7 +549,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
 
             <button
               onClick={() => setMainViewMode('month')}
-              className={`px-3 py-1.5 text-xs font-bold rounded-lg flex items-center gap-1.5 transition-all ${
+              className={`flex-1 sm:flex-initial px-3 py-1.5 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 transition-all ${
                 mainViewMode === 'month'
                   ? 'bg-indigo-600 text-white shadow-md'
                   : 'text-slate-400 hover:text-slate-200'
@@ -562,10 +562,10 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
 
           {/* Sub View Toggle for Week Mode */}
           {mainViewMode === 'week' && (
-            <div className="bg-slate-950 p-1 rounded-xl border border-slate-800 flex items-center gap-1">
+            <div className="bg-slate-950 p-1 rounded-xl border border-slate-800 flex items-center gap-1 flex-1 sm:flex-initial">
               <button
                 onClick={() => setWeekViewType('table')}
-                className={`px-2.5 py-1 text-xs font-semibold rounded-lg flex items-center gap-1 transition-all ${
+                className={`flex-1 sm:flex-initial px-2.5 py-1 text-xs font-semibold rounded-lg flex items-center justify-center gap-1 transition-all ${
                   weekViewType === 'table'
                     ? 'bg-slate-800 text-indigo-300 border border-slate-700'
                     : 'text-slate-400 hover:text-slate-200'
@@ -577,7 +577,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
               </button>
               <button
                 onClick={() => setWeekViewType('grid')}
-                className={`px-2.5 py-1 text-xs font-semibold rounded-lg flex items-center gap-1 transition-all ${
+                className={`flex-1 sm:flex-initial px-2.5 py-1 text-xs font-semibold rounded-lg flex items-center justify-center gap-1 transition-all ${
                   weekViewType === 'grid'
                     ? 'bg-slate-800 text-indigo-300 border border-slate-700'
                     : 'text-slate-400 hover:text-slate-200'
@@ -591,7 +591,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
           )}
 
           {/* Date Navigator Controls */}
-          <div className="flex items-center gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800">
+          <div className="flex items-center gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800 w-full sm:w-auto justify-between sm:justify-start">
             <button
               onClick={mainViewMode === 'week' ? handlePrevWeek : handlePrevMonth}
               className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
@@ -600,7 +600,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
               <ChevronLeft className="w-4 h-4" />
             </button>
 
-            <span className="text-xs font-bold font-mono px-2 text-indigo-300 min-w-[130px] text-center">
+            <span className="text-xs font-bold font-mono px-2 text-indigo-300 flex-1 sm:flex-initial min-w-[120px] text-center">
               {mainViewMode === 'week' ? weekRangeText : monthNameVietnamese}
             </span>
 
@@ -622,14 +622,14 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
         </div>
 
         {/* Category Filters & Add Button */}
-        <div className="flex flex-wrap items-center justify-between gap-2.5 w-full">
+        <div className="flex flex-wrap sm:flex-nowrap items-center justify-between gap-2.5 w-full xl:w-auto">
           {/* Category Dropdown */}
-          <div className="flex-1 min-w-0 max-w-xs">
+          <div className="w-full sm:w-48 md:w-56 min-w-0">
             <div className="relative">
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="appearance-none w-full bg-slate-950/90 text-slate-200 text-sm font-semibold pl-4 pr-10 py-2.5 rounded-xl border border-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 shadow-inner"
+                className="appearance-none w-full bg-slate-950/90 text-slate-200 text-xs sm:text-sm font-semibold pl-3 sm:pl-4 pr-10 py-2 sm:py-2.5 rounded-xl border border-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 shadow-inner"
               >
                 <option value="all">
                   Tất Cả ({events.filter((e) => !e.completed).length})
@@ -649,22 +649,22 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
             </div>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0 ml-auto sm:ml-0">
+          <div className="flex items-center gap-2 w-full sm:w-auto shrink-0 justify-end">
             <button
               onClick={handleOpenSundayPlanner}
-              className="bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/50 text-amber-300 text-xs font-bold px-3 py-2 rounded-xl flex items-center justify-center gap-1.5 shadow-md transition-all shrink-0"
+              className="bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/50 text-amber-300 text-xs font-bold px-3 py-2 rounded-xl flex items-center justify-center gap-1.5 shadow-md transition-all flex-1 sm:flex-initial shrink-0"
               title="Công cụ Chủ Nhật: Lên lịch & sắp xếp công việc hàng ngày cho tuần mới"
             >
               <CalendarCheck2 className="w-4 h-4 text-amber-400" />
-              <span>📋 Lên Lịch Chủ Nhật</span>
+              <span className="truncate">📋 Lên Lịch Chủ Nhật</span>
             </button>
 
             <button
               onClick={() => setIsAddModalOpen(true)}
-              className="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-3.5 py-2 rounded-xl flex items-center justify-center gap-1.5 shadow-md shadow-indigo-600/30 transition-all shrink-0"
+              className="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-3.5 py-2 rounded-xl flex items-center justify-center gap-1.5 shadow-md shadow-indigo-600/30 transition-all flex-1 sm:flex-initial shrink-0"
             >
               <Plus className="w-4 h-4" />
-              <span>Thêm Lịch Mới</span>
+              <span className="truncate">Thêm Lịch Mới</span>
             </button>
           </div>
         </div>
