@@ -1,5 +1,5 @@
-import React from 'react';
-import { Calendar, LayoutGrid, ShieldCheck, Mic, Cpu, Sparkles, Stethoscope, Clock, Sliders, LogOut, User as UserIcon, Globe, ExternalLink, Database } from 'lucide-react';
+import React, { useState } from 'react';
+import { Calendar, LayoutGrid, ShieldCheck, Mic, Cpu, Sparkles, Stethoscope, Clock, Sliders, LogOut, Globe, ExternalLink, Database, Menu, X } from 'lucide-react';
 import { AppSettings } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -23,13 +23,14 @@ export const Navbar: React.FC<NavbarProps> = ({
   onToggleVoice,
 }) => {
   const { user, logout, isAdmin } = useAuth();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
     <header className="bg-[#0F172A] border-b border-slate-800 text-white sticky top-0 z-30 shadow-lg">
       {/* Top Banner with Doctor Info & Status */}
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex flex-wrap md:flex-nowrap items-center justify-between gap-2.5 sm:gap-3">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between gap-2.5">
         {/* Doctor Branding */}
-        <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+        <div className="flex items-center gap-2.5 min-w-0 flex-1">
           <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-md shadow-indigo-600/30 shrink-0 overflow-hidden">
             {user?.photoURL ? (
               <img src={user.photoURL} alt={user.displayName || 'Avatar'} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
@@ -37,9 +38,9 @@ export const Navbar: React.FC<NavbarProps> = ({
               <Stethoscope className="w-5 h-5" />
             )}
           </div>
-          <div className="min-w-0">
-            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-              <h1 className="font-bold text-sm sm:text-base md:text-lg text-slate-100 tracking-tight truncate max-w-[170px] xs:max-w-[220px] sm:max-w-none">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <h1 className="font-bold text-sm sm:text-base md:text-lg text-slate-100 tracking-tight truncate max-w-[160px] xs:max-w-[220px] sm:max-w-none">
                 {user?.displayName || settings.doctorTitle || 'BS. Chẩn đoán Hình ảnh'}
               </h1>
               {isAdmin && (
@@ -47,7 +48,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   Admin
                 </span>
               )}
-              <span className="bg-indigo-950/80 text-indigo-300 border border-indigo-800/80 text-[11px] sm:text-xs px-2 py-0.5 rounded-full font-medium truncate max-w-[150px] sm:max-w-none">
+              <span className="hidden xs:inline-block bg-indigo-950/80 text-indigo-300 border border-indigo-800/80 text-[10px] sm:text-xs px-2 py-0.5 rounded-full font-medium truncate max-w-[140px] sm:max-w-none">
                 {settings.hospitalName || 'BV Nội tiết Trung ương'}
               </span>
             </div>
@@ -70,9 +71,9 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         </div>
 
-        {/* Sync & Protected Rest Badges */}
-        <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap shrink-0">
-          <div className="hidden sm:flex bg-emerald-950/80 border border-emerald-800/80 text-emerald-300 text-xs px-2.5 py-1.5 rounded-xl items-center gap-1.5 font-medium shadow-sm" title="Dữ liệu lịch làm việc và cài đặt được lưu trữ trực tuyến vĩnh viễn trên Firestore Cloud Database">
+        {/* Desktop Quick Actions */}
+        <div className="hidden md:flex items-center gap-1.5 sm:gap-2 shrink-0">
+          <div className="hidden lg:flex bg-emerald-950/80 border border-emerald-800/80 text-emerald-300 text-xs px-2.5 py-1.5 rounded-xl items-center gap-1.5 font-medium shadow-sm" title="Dữ liệu lịch làm việc và cài đặt được lưu trữ trực tuyến vĩnh viễn trên Firestore Cloud Database">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
             <Database className="w-3.5 h-3.5 text-emerald-400" />
             <span>Firestore: Lưu Vĩnh Viễn</span>
@@ -87,18 +88,18 @@ export const Navbar: React.FC<NavbarProps> = ({
           {isAdmin && (
             <button
               onClick={onOpenSettings}
-              className="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-indigo-300 text-xs px-2.5 sm:px-3 py-1.5 rounded-xl font-semibold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+              className="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-indigo-300 text-xs px-3 py-1.5 rounded-xl font-semibold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
               title="Mở Cài đặt Chỉnh sửa Tên Website, Nhóm, Mức ưu tiên..."
             >
               <Sliders className="w-3.5 h-3.5 text-indigo-400" />
-              <span className="hidden sm:inline">Cài Đặt</span>
+              <span>Cài Đặt</span>
             </button>
           )}
 
           {/* Voice Chat Button */}
           <button
             onClick={onToggleVoice}
-            className={`text-xs px-2.5 sm:px-3 py-1.5 rounded-xl flex items-center gap-1.5 font-semibold transition-all shadow-sm active:scale-95 ${
+            className={`text-xs px-3 py-1.5 rounded-xl flex items-center gap-1.5 font-semibold transition-all shadow-sm active:scale-95 ${
               isVoiceActive
                 ? 'bg-rose-600 text-white animate-pulse ring-2 ring-rose-400/50'
                 : 'bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200'
@@ -106,13 +107,13 @@ export const Navbar: React.FC<NavbarProps> = ({
             title="Bật/Tắt Nhận diện Giọng nói Tiếng Việt"
           >
             <Mic className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">{isVoiceActive ? 'Đang Lắng Nghe...' : 'Nói Tiếng Việt'}</span>
+            <span>{isVoiceActive ? 'Đang Lắng Nghe...' : 'Nói Tiếng Việt'}</span>
           </button>
 
           {/* AI Chat Drawer Trigger */}
           <button
             onClick={onOpenChat}
-            className="bg-indigo-600 hover:bg-indigo-500 text-white text-xs px-3 sm:px-3.5 py-1.5 rounded-xl font-semibold flex items-center gap-1.5 shadow-md shadow-indigo-600/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
+            className="bg-indigo-600 hover:bg-indigo-500 text-white text-xs px-3.5 py-1.5 rounded-xl font-semibold flex items-center gap-1.5 shadow-md shadow-indigo-600/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
           >
             <Sparkles className="w-3.5 h-3.5" />
             <span>Hỏi Trợ Lý AI</span>
@@ -127,59 +128,146 @@ export const Navbar: React.FC<NavbarProps> = ({
             <LogOut className="w-3.5 h-3.5" />
           </button>
         </div>
+
+        {/* Mobile Header Buttons */}
+        <div className="flex md:hidden items-center gap-1.5 shrink-0">
+          <button
+            onClick={onOpenChat}
+            className="bg-indigo-600 hover:bg-indigo-500 text-white text-xs px-2.5 py-1.5 rounded-xl font-semibold flex items-center gap-1 shadow-md shadow-indigo-600/30 active:scale-95"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Hỏi AI</span>
+          </button>
+
+          <button
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="p-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 rounded-xl transition-colors active:scale-95"
+            aria-label="Toggle menu"
+          >
+            {isMobileMenuOpen ? <X className="w-5 h-5 text-indigo-400" /> : <Menu className="w-5 h-5 text-indigo-400" />}
+          </button>
+        </div>
       </div>
 
+      {/* Mobile Menu Slide-Down Panel */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden bg-slate-900/95 border-b border-slate-800 px-4 py-3 space-y-3 animate-in slide-in-from-top duration-200 shadow-2xl">
+          <div className="flex items-center justify-between text-xs pb-2 border-b border-slate-800 text-slate-300">
+            <span className="font-semibold text-indigo-300">{settings.hospitalName || 'BV Nội tiết Trung ương'}</span>
+            <span className="bg-emerald-950 border border-emerald-800 text-emerald-300 px-2 py-0.5 rounded-full text-[10px] flex items-center gap-1">
+              <Database className="w-3 h-3 text-emerald-400" /> Cloud Firestore Sync
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 pt-1">
+            <button
+              onClick={() => {
+                onToggleVoice();
+                setIsMobileMenuOpen(false);
+              }}
+              className={`text-xs px-3 py-2 rounded-xl flex items-center justify-center gap-1.5 font-semibold transition-all ${
+                isVoiceActive
+                  ? 'bg-rose-600 text-white animate-pulse'
+                  : 'bg-slate-800 border border-slate-700 text-slate-200'
+              }`}
+            >
+              <Mic className="w-4 h-4" />
+              <span>{isVoiceActive ? 'Đang Lắng Nghe' : 'Nói Tiếng Việt'}</span>
+            </button>
+
+            {isAdmin && (
+              <button
+                onClick={() => {
+                  onOpenSettings();
+                  setIsMobileMenuOpen(false);
+                }}
+                className="bg-slate-800 border border-slate-700 text-indigo-300 text-xs px-3 py-2 rounded-xl font-semibold flex items-center justify-center gap-1.5"
+              >
+                <Sliders className="w-4 h-4 text-indigo-400" />
+                <span>Cài Đặt Hệ Thống</span>
+              </button>
+            )}
+
+            <button
+              onClick={() => {
+                onOpenChat();
+                setIsMobileMenuOpen(false);
+              }}
+              className="bg-indigo-600 text-white text-xs px-3 py-2 rounded-xl font-semibold flex items-center justify-center gap-1.5 shadow-md shadow-indigo-600/30"
+            >
+              <Sparkles className="w-4 h-4" />
+              <span>Chatbot Trợ Lý AI</span>
+            </button>
+
+            <button
+              onClick={() => {
+                logout();
+                setIsMobileMenuOpen(false);
+              }}
+              className="bg-rose-950/60 border border-rose-800/80 text-rose-300 text-xs px-3 py-2 rounded-xl font-semibold flex items-center justify-center gap-1.5"
+            >
+              <LogOut className="w-4 h-4 text-rose-400" />
+              <span>Đăng Xuất</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Main Navigation Tabs */}
       <div className="max-w-7xl mx-auto px-2 sm:px-4 flex items-center gap-1 overflow-x-auto border-t border-slate-800/80 scrollbar-none">
         <button
           onClick={() => setActiveTab('calendar')}
-          className={`flex items-center gap-2 px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-medium border-b-2 transition-all whitespace-nowrap ${
+          className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-medium border-b-2 transition-all whitespace-nowrap ${
             activeTab === 'calendar'
               ? 'border-indigo-500 text-indigo-300 bg-indigo-950/40'
               : 'border-transparent text-slate-400 hover:text-slate-200 hover:border-slate-700'
           }`}
         >
-          <Calendar className="w-4 h-4" />
-          <span>Thời Gian Biểu Tuần</span>
+          <Calendar className="w-4 h-4 text-indigo-400" />
+          <span className="sm:hidden">Lịch Tuần</span>
+          <span className="hidden sm:inline">Thời Gian Biểu Tuần</span>
         </button>
 
         <button
           onClick={() => setActiveTab('matrix')}
-          className={`flex items-center gap-2 px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-medium border-b-2 transition-all whitespace-nowrap ${
+          className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-medium border-b-2 transition-all whitespace-nowrap ${
             activeTab === 'matrix'
               ? 'border-indigo-500 text-indigo-300 bg-indigo-950/40'
               : 'border-transparent text-slate-400 hover:text-slate-200 hover:border-slate-700'
           }`}
         >
-          <LayoutGrid className="w-4 h-4" />
-          <span>Ma Trận Eisenhower (P1-P4)</span>
+          <LayoutGrid className="w-4 h-4 text-amber-400" />
+          <span className="sm:hidden">Ma Trận P1-P4</span>
+          <span className="hidden sm:inline">Ma Trận Eisenhower (P1-P4)</span>
         </button>
 
         <button
           onClick={() => setActiveTab('analytics')}
-          className={`flex items-center gap-2 px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-medium border-b-2 transition-all whitespace-nowrap ${
+          className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-medium border-b-2 transition-all whitespace-nowrap ${
             activeTab === 'analytics'
               ? 'border-indigo-500 text-indigo-300 bg-indigo-950/40'
               : 'border-transparent text-slate-400 hover:text-slate-200 hover:border-slate-700'
           }`}
         >
-          <Clock className="w-4 h-4" />
-          <span>Phân Tích Đệm & Nghỉ Ngơi</span>
+          <Clock className="w-4 h-4 text-emerald-400" />
+          <span className="sm:hidden">Phân Tích</span>
+          <span className="hidden sm:inline">Phân Tích Đệm & Nghỉ Ngơi</span>
         </button>
 
         <button
           onClick={() => setActiveTab('architecture')}
-          className={`flex items-center gap-2 px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-medium border-b-2 transition-all whitespace-nowrap ${
+          className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-medium border-b-2 transition-all whitespace-nowrap ${
             activeTab === 'architecture'
               ? 'border-indigo-400 text-indigo-300 bg-indigo-950/50'
               : 'border-transparent text-indigo-400/80 hover:text-indigo-200 hover:border-indigo-800'
           }`}
         >
-          <Cpu className="w-4 h-4" />
-          <span>Kiến Trúc & Gemini Schema</span>
+          <Cpu className="w-4 h-4 text-cyan-400" />
+          <span className="sm:hidden">Kiến Trúc AI</span>
+          <span className="hidden sm:inline">Kiến Trúc & Gemini Schema</span>
         </button>
       </div>
     </header>
   );
 };
+

@@ -101,6 +101,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [mainViewMode, setMainViewMode] = useState<'week' | 'month'>('week');
   const [weekViewType, setWeekViewType] = useState<'table' | 'grid'>('table');
+  const [selectedMobileDay, setSelectedMobileDay] = useState<number | 'all'>('all');
 
   // Base date for navigation (default: August 10, 2026)
   const [currentBaseDate, setCurrentBaseDate] = useState<Date>(new Date(2026, 7, 10));
@@ -673,8 +674,149 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
       {/* ----------------- MODE A: XEM THEO TUẦN (WEEK VIEW) ----------------- */}
       {mainViewMode === 'week' && (
         <>
-          {/* OPTION 1: BẢNG PHÂN CA BAN NGÀY & BUỔI TỐI */}
-          {weekViewType === 'table' && (
+          {/* Mobile Day Selector Bar */}
+          <div className="bg-[#0F172A] border border-slate-800 rounded-2xl p-3 space-y-2 shadow-lg">
+            <div className="flex items-center justify-between text-xs font-semibold text-slate-300">
+              <span className="flex items-center gap-1.5 text-indigo-300">
+                <CalendarIcon className="w-4 h-4 text-indigo-400" />
+                <span>Xem Lịch Trên Điện Thoại:</span>
+              </span>
+              {selectedMobileDay !== 'all' && (
+                <button
+                  onClick={() => setSelectedMobileDay('all')}
+                  className="text-xs text-indigo-400 hover:text-indigo-300 font-bold underline flex items-center gap-1"
+                >
+                  <span>Xem Cả 7 Ngày</span> 📊
+                </button>
+              )}
+            </div>
+
+            <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-1">
+              <button
+                onClick={() => setSelectedMobileDay('all')}
+                className={`px-3 py-1.5 text-xs font-bold rounded-xl whitespace-nowrap transition-all border shrink-0 ${
+                  selectedMobileDay === 'all'
+                    ? 'bg-indigo-600 text-white border-indigo-500 shadow-md'
+                    : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-slate-200'
+                }`}
+              >
+                Tất Cả 7 Ngày 📊
+              </button>
+              {weekDays.map(({ dayOfWeek, short, dateStr }) => (
+                <button
+                  key={dayOfWeek}
+                  onClick={() => setSelectedMobileDay(dayOfWeek)}
+                  className={`px-3 py-1.5 text-xs font-bold rounded-xl whitespace-nowrap transition-all border shrink-0 ${
+                    selectedMobileDay === dayOfWeek
+                      ? 'bg-indigo-600 text-white border-indigo-500 shadow-md ring-2 ring-indigo-400/40'
+                      : dayOfWeek === 6 || dayOfWeek === 0
+                      ? 'bg-amber-950/30 text-amber-300 border-amber-800/60'
+                      : 'bg-slate-950 text-slate-300 border-slate-800 hover:text-white'
+                  }`}
+                >
+                  {short} ({dateStr})
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Dedicated Mobile Single-Day View when a specific day is picked on phone */}
+          {selectedMobileDay !== 'all' && (() => {
+            const targetDayObj = weekDays.find((d) => d.dayOfWeek === selectedMobileDay);
+            if (!targetDayObj) return null;
+
+            const daytimeEvts = filteredEvents
+              .filter(
+                (e) =>
+                  (e.date ? e.date === targetDayObj.isoStr : e.dayOfWeek === targetDayObj.dayOfWeek) &&
+                  isDaytimeEvent(e.startTime)
+              )
+              .sort((a, b) => a.startTime.localeCompare(b.startTime));
+
+            const eveningEvts = filteredEvents
+              .filter(
+                (e) =>
+                  (e.date ? e.date === targetDayObj.isoStr : e.dayOfWeek === targetDayObj.dayOfWeek) &&
+                  !isDaytimeEvent(e.startTime)
+              )
+              .sort((a, b) => a.startTime.localeCompare(b.startTime));
+
+            return (
+              <div className="bg-[#0F172A] border border-slate-800 rounded-2xl p-3.5 sm:p-5 space-y-4 shadow-xl">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+                  <div>
+                    <h3 className="font-bold text-base text-slate-100 flex items-center gap-2">
+                      <span>{targetDayObj.label}</span>
+                      <span className="text-xs text-indigo-300 font-mono">({targetDayObj.dateStr})</span>
+                    </h3>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      Tổng số: {daytimeEvts.length + eveningEvts.length} lịch hẹn & công việc trong ngày
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => handleSlotDoubleClick(targetDayObj.dayOfWeek, targetDayObj.isoStr, false)}
+                    className="bg-indigo-600 hover:bg-indigo-500 text-white text-xs px-3 py-1.5 rounded-xl font-bold flex items-center gap-1 shadow-md active:scale-95 transition-all"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Thêm Ca</span>
+                  </button>
+                </div>
+
+                {/* Daytime Block */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between bg-amber-950/40 border border-amber-800/40 px-3 py-2 rounded-xl text-xs font-bold text-amber-300">
+                    <span className="flex items-center gap-1.5">
+                      <Sun className="w-4 h-4 text-amber-400" /> Ban Ngày (06:00 - 18:00)
+                    </span>
+                    <span className="text-[11px] bg-amber-900/50 text-amber-200 px-2 py-0.5 rounded-full font-mono">
+                      {daytimeEvts.length} ca
+                    </span>
+                  </div>
+
+                  {daytimeEvts.length === 0 ? (
+                    <div
+                      onClick={() => handleSlotDoubleClick(targetDayObj.dayOfWeek, targetDayObj.isoStr, false)}
+                      className="p-4 border border-dashed border-slate-800 hover:border-amber-500/40 rounded-xl text-center text-xs text-slate-500 hover:text-amber-300 cursor-pointer transition-colors"
+                    >
+                      + Trống ca ban ngày. Nhấp vào đây để tạo lịch mới
+                    </div>
+                  ) : (
+                    <div className="space-y-2.5">
+                      {daytimeEvts.map((evt) => renderEventCard(evt))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Evening Block */}
+                <div className="space-y-2 pt-2 border-t border-slate-800/60">
+                  <div className="flex items-center justify-between bg-indigo-950/40 border border-indigo-800/40 px-3 py-2 rounded-xl text-xs font-bold text-indigo-300">
+                    <span className="flex items-center gap-1.5">
+                      <Moon className="w-4 h-4 text-indigo-400" /> Buổi Tối (18:00 - 24:00)
+                    </span>
+                    <span className="text-[11px] bg-indigo-900/50 text-indigo-200 px-2 py-0.5 rounded-full font-mono">
+                      {eveningEvts.length} ca
+                    </span>
+                  </div>
+
+                  {eveningEvts.length === 0 ? (
+                    <div
+                      onClick={() => handleSlotDoubleClick(targetDayObj.dayOfWeek, targetDayObj.isoStr, true)}
+                      className="p-4 border border-dashed border-slate-800 hover:border-indigo-500/40 rounded-xl text-center text-xs text-slate-500 hover:text-indigo-300 cursor-pointer transition-colors"
+                    >
+                      + Trống ca tối. Nhấp vào đây để tạo lịch mới
+                    </div>
+                  ) : (
+                    <div className="space-y-2.5">
+                      {eveningEvts.map((evt) => renderEventCard(evt))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* OPTION 1: BẢNG PHÂN CA BAN NGÀY & BUỔI TỐI (WHEN SHOWING ALL 7 DAYS) */}
+          {weekViewType === 'table' && selectedMobileDay === 'all' && (
             <div className="bg-[#0F172A] border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
               <div className="p-3 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between text-xs text-slate-300">
                 <div className="flex items-center gap-2 font-semibold text-indigo-300">
@@ -683,28 +825,32 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                     Bảng Phân Ca Tuần: Ban Ngày (06h-18h) & Buổi Tối (18h-24h)
                   </span>
                 </div>
-                <span className="text-[11px] text-slate-400 hidden sm:inline">
-                  Dùng nút ✏️ trên mỗi thẻ để sửa chi tiết nội dung
+                <span className="text-[11px] text-slate-400">
+                  <span className="hidden sm:inline">Dùng nút ✏️ trên mỗi thẻ để sửa chi tiết nội dung</span>
+                  <span className="sm:hidden text-amber-300">👈 Vuốt ngang xem đủ 7 ngày</span>
                 </span>
               </div>
 
-              <div className="overflow-x-auto scrollbar-thin">
-                <table className="w-full min-w-[840px] border-collapse text-left">
+              <div className="overflow-x-auto scrollbar-thin relative">
+                <table className="w-full min-w-[720px] sm:min-w-[840px] border-collapse text-left">
                   <thead>
                     <tr className="bg-slate-950/80 border-b border-slate-800">
-                      <th className="p-3 w-32 border-r border-slate-800/80 text-xs font-bold text-slate-400 uppercase tracking-wider text-center">
+                      <th className="p-2 sm:p-3 w-24 sm:w-32 border-r border-slate-800/80 text-xs font-bold text-slate-400 uppercase tracking-wider text-center sticky left-0 z-20 bg-slate-950 shadow-md">
                         Khung Giờ
                       </th>
-                      {weekDays.map(({ dayOfWeek, label, dateStr }) => {
+                      {weekDays.map(({ dayOfWeek, label, short, dateStr }) => {
                         const isWeekend = dayOfWeek === 6 || dayOfWeek === 0;
                         return (
                           <th
                             key={dayOfWeek}
-                            className={`p-3 text-center border-r border-slate-800/80 last:border-r-0 ${
+                            className={`p-2.5 sm:p-3 text-center border-r border-slate-800/80 last:border-r-0 ${
                               isWeekend ? 'bg-slate-900/40' : ''
                             }`}
                           >
-                            <div className="font-bold text-xs text-slate-200">{label}</div>
+                            <div className="font-bold text-xs text-slate-200">
+                              <span className="hidden sm:inline">{label}</span>
+                              <span className="sm:hidden">{short}</span>
+                            </div>
                             <div className="text-[10px] text-indigo-300 font-mono font-semibold">{dateStr}</div>
                           </th>
                         );
@@ -714,13 +860,13 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                   <tbody className="divide-y divide-slate-800/80">
                     {/* ROW 1: BAN NGÀY ☀️ */}
                     <tr className="bg-amber-950/10 hover:bg-amber-950/20 transition-colors">
-                      <td className="p-3 border-r border-slate-800/80 bg-slate-950/60 text-center align-top">
-                        <div className="sticky left-0 flex flex-col items-center justify-center space-y-1">
-                          <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center shadow-sm">
-                            <Sun className="w-4 h-4" />
+                      <td className="p-2.5 sm:p-3 border-r border-slate-800/80 bg-slate-950/90 text-center align-top sticky left-0 z-10 shadow-md">
+                        <div className="flex flex-col items-center justify-center space-y-1">
+                          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center shadow-sm">
+                            <Sun className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                           </div>
-                          <span className="font-bold text-xs text-amber-300">BAN NGÀY</span>
-                          <span className="text-[10px] text-amber-400/80 font-mono">06:00 - 18:00</span>
+                          <span className="font-bold text-[11px] sm:text-xs text-amber-300">BAN NGÀY</span>
+                          <span className="text-[9px] sm:text-[10px] text-amber-400/80 font-mono">06h - 18h</span>
                         </div>
                       </td>
 
@@ -737,15 +883,15 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                           <td
                             key={dayOfWeek}
                             onDoubleClick={() => handleSlotDoubleClick(dayOfWeek, isoStr, false)}
-                            className="p-2 border-r border-slate-800/80 last:border-r-0 align-top min-w-[120px] hover:bg-amber-500/5 transition-colors cursor-cell group"
+                            className="p-1.5 sm:p-2 border-r border-slate-800/80 last:border-r-0 align-top min-w-[110px] sm:min-w-[120px] hover:bg-amber-500/5 transition-colors cursor-cell group"
                             title="Nháy đúp để thêm lịch ca sáng/chiều"
                           >
-                            <div className="space-y-2 min-h-[140px]">
+                            <div className="space-y-2 min-h-[120px] sm:min-h-[140px]">
                               {daytimeEvts.length === 0 ? (
-                                <div className="h-full min-h-[120px] flex items-center justify-center text-[10px] text-slate-600 border border-dashed border-slate-800/60 rounded-xl p-2 text-center group-hover:border-amber-500/30 group-hover:text-amber-400/60 transition-all">
+                                <div className="h-full min-h-[100px] sm:min-h-[120px] flex items-center justify-center text-[10px] text-slate-600 border border-dashed border-slate-800/60 rounded-xl p-1.5 text-center group-hover:border-amber-500/30 group-hover:text-amber-400/60 transition-all">
                                   <div className="flex flex-col items-center gap-1">
                                     <Plus className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                    <span>Trống ca sáng / chiều</span>
+                                    <span>Trống ca sáng/chiều</span>
                                   </div>
                                 </div>
                               ) : (
@@ -759,13 +905,13 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
 
                     {/* ROW 2: BUỔI TỐI 🌙 */}
                     <tr className="bg-indigo-950/10 hover:bg-indigo-950/20 transition-colors">
-                      <td className="p-3 border-r border-slate-800/80 bg-slate-950/60 text-center align-top">
-                        <div className="sticky left-0 flex flex-col items-center justify-center space-y-1">
-                          <div className="w-8 h-8 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 flex items-center justify-center shadow-sm">
-                            <Moon className="w-4 h-4" />
+                      <td className="p-2.5 sm:p-3 border-r border-slate-800/80 bg-slate-950/90 text-center align-top sticky left-0 z-10 shadow-md">
+                        <div className="flex flex-col items-center justify-center space-y-1">
+                          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 flex items-center justify-center shadow-sm">
+                            <Moon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                           </div>
-                          <span className="font-bold text-xs text-indigo-300">BUỔI TỐI</span>
-                          <span className="text-[10px] text-indigo-400/80 font-mono">18:00 - 24:00</span>
+                          <span className="font-bold text-[11px] sm:text-xs text-indigo-300">BUỔI TỐI</span>
+                          <span className="text-[9px] sm:text-[10px] text-indigo-400/80 font-mono">18h - 24h</span>
                         </div>
                       </td>
 
@@ -782,12 +928,12 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                           <td
                             key={dayOfWeek}
                             onDoubleClick={() => handleSlotDoubleClick(dayOfWeek, isoStr, true)}
-                            className="p-2 border-r border-slate-800/80 last:border-r-0 align-top min-w-[120px] hover:bg-indigo-500/5 transition-colors cursor-cell group"
+                            className="p-1.5 sm:p-2 border-r border-slate-800/80 last:border-r-0 align-top min-w-[110px] sm:min-w-[120px] hover:bg-indigo-500/5 transition-colors cursor-cell group"
                             title="Nháy đúp để thêm lịch ca tối"
                           >
-                            <div className="space-y-2 min-h-[140px]">
+                            <div className="space-y-2 min-h-[120px] sm:min-h-[140px]">
                               {eveningEvts.length === 0 ? (
-                                <div className="h-full min-h-[120px] flex items-center justify-center text-[10px] text-slate-600 border border-dashed border-slate-800/60 rounded-xl p-2 text-center group-hover:border-indigo-500/30 group-hover:text-indigo-400/60 transition-all">
+                                <div className="h-full min-h-[100px] sm:min-h-[120px] flex items-center justify-center text-[10px] text-slate-600 border border-dashed border-slate-800/60 rounded-xl p-1.5 text-center group-hover:border-indigo-500/30 group-hover:text-indigo-400/60 transition-all">
                                   <div className="flex flex-col items-center gap-1">
                                     <Plus className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                                     <span>Trống ca tối</span>
