@@ -9,9 +9,38 @@ export const SystemArchitectureInspector: React.FC = () => {
 
   useEffect(() => {
     fetch('/api/schema')
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error('API unavailable');
+        return res.json();
+      })
       .then((data) => setSchemaDoc(data))
-      .catch((err) => console.error('Failed to load schema doc', err));
+      .catch((err) => {
+        console.warn('Failed to load schema doc from server, using fallback schema', err);
+        setSchemaDoc({
+          role: 'Trợ lý AI Quản lý Lịch và Công việc Chuyên biệt dành cho Bác sĩ Chẩn đoán Hình ảnh Bệnh viện Nội tiết Trung ương',
+          systemInstruction: `Trợ lý AI Quản lý Lịch cho Bác sĩ CĐHA - BV Nội tiết TƯ.
+Bối cảnh: T2-T6 làm viện (siêu âm, MRI, RFA, VABB). Tối (19h30+) học MRI/CLVT hoặc nghỉ (P4). Cuối tuần làm PK (MSK) ban ngày, nghỉ tối.
+Ưu tiên (Eisenhower):
+- P1: Can thiệp lâm sàng (RFA, VABB, Sinh thiết), Cấp cứu.
+- P2: Học tập chuyên sâu. Cần đệm 45p sau giờ làm.
+- P3: Thường quy (Siêu âm, PK).
+- P4: Nghỉ ngơi. TUYỆT ĐỐI ko chen lịch trừ khi y/c.
+Nhiệm vụ: Phân tích tin nhắn, gọi hàm phù hợp, phản hồi lịch sự (xưng Em, gọi Anh/Bác sĩ).`,
+          functionDeclarations: [
+            { name: 'tao_lich_hen', description: 'Tạo lịch hẹn hoặc công việc mới trong thời gian biểu của bác sĩ.', parameters: {} },
+            { name: 'cap_nhat_uu_tien', description: 'Cập nhật mức độ ưu tiên Eisenhower (P1-P4) cho công việc đã có.', parameters: {} },
+            { name: 'xoa_lich_hen', description: 'Xóa hoặc hủy lịch hẹn/công việc trong thời gian biểu.', parameters: {} },
+            { name: 'tinh_khang_dem', description: 'Tính toán khoảng nghỉ đệm và cảnh báo xung đột lịch làm/học.', parameters: {} },
+            { name: 'ghi_nho_thoi_quen', description: 'Tự động học hỏi thói quen và quy tắc cá nhân vào Prompt Phụ.', parameters: {} },
+          ],
+          architectureSteps: [
+            { id: '1', title: 'Xử lý Đầu vào & Giọng nói tiếng Việt', desc: 'Web Speech API & Giao diện Chatbot nhận yêu cầu bằng tiếng Việt tự nhiên.', tech: 'React 19 + Web Speech API (vi-VN)' },
+            { id: '2', title: 'Phân tích Ý định & Function Calling với Gemini AI', desc: 'Sử dụng Gemini 3.6 Flash để trích xuất JSON Schema & tự động quyết định gọi tool.', tech: '@google/genai SDK (gemini-3.6-flash / 1.5-flash)' },
+            { id: '3', title: 'Ma trận Eisenhower & Tính toán Thời gian Đệm', desc: 'Kiểm tra bối cảnh lâm sàng (P1-P4) và bảo vệ các buổi tối nghỉ ngơi.', tech: 'Custom Priority & Buffer Engine' },
+            { id: '4', title: 'Tự Động Học Hỏi & Tổng Hợp Prompt Phụ', desc: 'Tự động trích xuất thói quen từ hội thoại để tự học nâng cao hiệu suất.', tech: 'Dynamic Memory Extraction' },
+          ],
+        });
+      });
   }, []);
 
   const copyToClipboard = (text: string) => {

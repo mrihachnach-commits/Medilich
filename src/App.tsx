@@ -10,6 +10,7 @@ import { ChatbotWidget } from './components/ChatbotWidget';
 import { SettingsModal } from './components/SettingsModal';
 import { useAuth } from './contexts/AuthContext';
 import { LoginScreen } from './components/LoginScreen';
+import { processChatRequest } from './lib/aiService';
 import { 
   subscribeToEvents,
   subscribeToSettings,
@@ -172,26 +173,20 @@ export default function App() {
     setIsAiLoading(true);
 
     try {
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: text,
-          history: chatMessages.slice(-6),
-          systemInstruction: settings.systemInstruction,
-          learnedPrompt: settings.learnedPrompt,
-          learnedMemories: settings.learnedMemories,
-          aiProvider: settings.aiProvider,
-          aiModel: settings.aiModel,
-          geminiApiKey: settings.geminiApiKey,
-          shopaikeyApiKey: settings.shopaikeyApiKey,
-          shopaikeyBaseUrl: settings.shopaikeyBaseUrl,
-          // Pass context events for AI
-          currentEvents: events,
-        }),
+      const data = await processChatRequest({
+        message: text,
+        history: chatMessages.slice(-6),
+        systemInstruction: settings.systemInstruction,
+        learnedPrompt: settings.learnedPrompt,
+        learnedMemories: settings.learnedMemories,
+        aiProvider: settings.aiProvider,
+        aiModel: settings.aiModel,
+        geminiApiKey: settings.geminiApiKey,
+        shopaikeyApiKey: settings.shopaikeyApiKey,
+        shopaikeyBaseUrl: settings.shopaikeyBaseUrl,
+        currentEvents: events,
       });
 
-      const data = await res.json();
       const aiMsg: ChatMessage = {
         id: `msg-ai-${Date.now()}`,
         sender: 'assistant',
@@ -201,6 +196,16 @@ export default function App() {
       };
 
       setChatMessages((prev) => [...prev, aiMsg]);
+
+      // Update learned memories if returned
+      if (data.updatedLearnedMemories && data.updatedLearnedMemories.length !== settings.learnedMemories?.length) {
+        const newSettings = {
+          ...settings,
+          learnedMemories: data.updatedLearnedMemories,
+          learnedPrompt: data.updatedLearnedPrompt || settings.learnedPrompt,
+        };
+        handleSaveSettings(newSettings);
+      }
 
       // Handle function calling results locally
       if (data.executedCall && user) {
@@ -227,7 +232,7 @@ export default function App() {
           const priority = args.newPriority;
           const toUpdate = events.filter(e => e.title.toLowerCase().includes(kw));
           for (const evt of toUpdate) {
-            await handleUpdateEvent(evt.id, { priority, priorityName: priority }); // priorityName will be handled by types or utility
+            await handleUpdateEvent(evt.id, { priority, priorityName: priority });
           }
         } else if (name === 'ghi_nho_thoi_quen') {
           const memory = args.memoryText || args.habitDescription || '';
