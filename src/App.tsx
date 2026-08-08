@@ -5,7 +5,6 @@ import { Navbar } from './components/Navbar';
 import { CalendarView } from './components/CalendarView';
 import { EisenhowerMatrix } from './components/EisenhowerMatrix';
 import { SmartAnalytics } from './components/SmartAnalytics';
-import { SystemArchitectureInspector } from './components/SystemArchitectureInspector';
 import { ChatbotWidget } from './components/ChatbotWidget';
 import { SettingsModal } from './components/SettingsModal';
 import { useAuth } from './contexts/AuthContext';
@@ -24,7 +23,7 @@ import {
 
 export default function App() {
   const { user, loading: authLoading, isAdmin } = useAuth();
-  const [activeTab, setActiveTab] = useState<'calendar' | 'matrix' | 'analytics' | 'architecture'>('calendar');
+  const [activeTab, setActiveTab] = useState<'calendar' | 'matrix' | 'analytics'>('calendar');
   const [events, setEvents] = useState<ScheduleEvent[]>([]);
   const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
   const [isVoiceActive, setIsVoiceActive] = useState<boolean>(false);
@@ -310,8 +309,6 @@ export default function App() {
             )}
 
             {activeTab === 'analytics' && <SmartAnalytics events={events} settings={settings} />}
-
-            {activeTab === 'architecture' && <SystemArchitectureInspector />}
           </main>
 
           {/* Footer */}

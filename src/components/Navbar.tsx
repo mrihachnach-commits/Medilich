@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { Calendar, LayoutGrid, ShieldCheck, Mic, Cpu, Sparkles, Stethoscope, Clock, Sliders, LogOut, Globe, ExternalLink, Database, Menu, X } from 'lucide-react';
+import { Calendar, LayoutGrid, ShieldCheck, Mic, Sparkles, Stethoscope, Clock, Sliders, LogOut, Globe, ExternalLink, Database, Menu, X } from 'lucide-react';
 import { AppSettings } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 
 interface NavbarProps {
-  activeTab: 'calendar' | 'matrix' | 'analytics' | 'architecture';
-  setActiveTab: (tab: 'calendar' | 'matrix' | 'analytics' | 'architecture') => void;
+  activeTab: 'calendar' | 'matrix' | 'analytics';
+  setActiveTab: (tab: 'calendar' | 'matrix' | 'analytics') => void;
   settings: AppSettings;
   onOpenSettings: () => void;
   onOpenChat: () => void;
@@ -252,19 +252,6 @@ export const Navbar: React.FC<NavbarProps> = ({
           <Clock className="w-4 h-4 text-emerald-400" />
           <span className="sm:hidden">Phân Tích</span>
           <span className="hidden sm:inline">Phân Tích Đệm & Nghỉ Ngơi</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab('architecture')}
-          className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-medium border-b-2 transition-all whitespace-nowrap ${
-            activeTab === 'architecture'
-              ? 'border-indigo-400 text-indigo-300 bg-indigo-950/50'
-              : 'border-transparent text-indigo-400/80 hover:text-indigo-200 hover:border-indigo-800'
-          }`}
-        >
-          <Cpu className="w-4 h-4 text-cyan-400" />
-          <span className="sm:hidden">Kiến Trúc AI</span>
-          <span className="hidden sm:inline">Kiến Trúc & Gemini Schema</span>
         </button>
       </div>
     </header>
