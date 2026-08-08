@@ -247,6 +247,52 @@ export default function App() {
 
             await handleUpdateEvent(evt.id, updates);
           }
+        } else if (name === 'sao_chep_lich_hen') {
+          const srcDate = args.sourceDate || '';
+          const titleKw = (args.titleKeyword || '').toLowerCase();
+
+          const sourceEvents = events.filter((evt) => {
+            if (titleKw && evt.title.toLowerCase().includes(titleKw)) return true;
+            if (srcDate) {
+              if (evt.date === srcDate || srcDate.includes(evt.date) || evt.date.includes(srcDate)) return true;
+              if (srcDate.includes('/') && evt.date) {
+                const parts = srcDate.split('/');
+                if (parts.length >= 2) {
+                  const dayP = parts[0].padStart(2, '0');
+                  const monthP = parts[1].padStart(2, '0');
+                  if (evt.date.endsWith(`-${monthP}-${dayP}`)) return true;
+                }
+              }
+            }
+            return false;
+          });
+
+          let targetDates: string[] = [];
+          if (args.startDateRange && args.endDateRange) {
+            const start = new Date(args.startDateRange);
+            const end = new Date(args.endDateRange);
+            for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+              const yyyy = d.getFullYear();
+              const mm = String(d.getMonth() + 1).padStart(2, '0');
+              const dd = String(d.getDate()).padStart(2, '0');
+              targetDates.push(`${yyyy}-${mm}-${dd}`);
+            }
+          } else if (Array.isArray(args.targetDates) && args.targetDates.length > 0) {
+            targetDates = args.targetDates;
+          }
+
+          for (const tDate of targetDates) {
+            const tDayOfWeek = new Date(tDate).getDay();
+            for (const sEvt of sourceEvents) {
+              const newCloned: ScheduleEvent = {
+                ...sEvt,
+                id: `evt-copy-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+                date: tDate,
+                dayOfWeek: tDayOfWeek,
+              };
+              await handleAddEvent(newCloned);
+            }
+          }
         } else if (name === 'xoa_lich_hen') {
           const kw = (args.titleKeyword || '').toLowerCase();
           const toDelete = events.filter(e => e.title.toLowerCase().includes(kw));

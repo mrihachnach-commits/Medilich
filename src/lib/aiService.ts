@@ -13,6 +13,11 @@ Quy tắc Ma trận Eisenhower:
 - P3 (Thường quy): Siêu âm phòng khám, Lịch họp bệnh viện.
 - P4 (Nghỉ ngơi): Thời gian phục hồi. TUYỆT ĐỐI không chèn lịch trừ khi Bác sĩ yêu cầu rõ ràng.
 
+HỖ TRỢ ĐA TÁC VỤ & SAO CHÉP HÀNG LOẠT (BATCH OPERATIONS):
+- Bác sĩ có thể yêu cầu sao chép (copy) công việc từ một ngày sang một khoảng ngày (ví dụ: "copy công việc ngày 10/8 sang từ 11/8 đến 14/8" hoặc "nhân bản lịch ngày hôm nay cho cả tuần").
+- Hãy BẮT BUỘC ưu tiên gọi hàm \`sao_chep_lich_hen\` với các tham số \`sourceDate\`, \`startDateRange\`, \`endDateRange\` hoặc \`targetDates\`.
+- Ngoài ra Bác sĩ có thể yêu cầu nhiều công việc cùng lúc (vừa đổi lịch, vừa thêm lịch, vừa xóa lịch), hãy tự tin thực thi đầy đủ.
+
 YÊU CẦU TRÌNH BÀY & TRUYỀN TẢI THÔNG TIN (BẮT BUỘC TUÂN THỦ):
 1. Xưng em, gọi "Anh" hoặc "Bác sĩ" thân mật, tôn trọng, chuyên nghiệp.
 2. BẮT BUỘC DÙNG DẤU GẠCH ĐẦU DÒNG (\`-\`) CHO TẤT CẢ CÁC DANH SÁCH LỊCH LÀM VIỆC VÀ CHI TIẾT CÔNG VIỆC:
@@ -97,6 +102,25 @@ export const dieuChinhLichHenDeclaration: FunctionDeclaration = {
       newPriority: { type: Type.STRING, description: 'Mức ưu tiên mới (P1, P2, P3, P4)' },
       newCategory: { type: Type.STRING, description: 'Phân loại nhóm mới (hospital, study, clinic, rest, personal)' },
       newDescription: { type: Type.STRING, description: 'Ghi chú mới bổ sung' },
+    },
+  },
+};
+
+export const saoChepLichHenDeclaration: FunctionDeclaration = {
+  name: 'sao_chep_lich_hen',
+  description: 'Sao chép (copy), nhân bản hàng loạt các công việc/lịch hẹn từ một ngày nguồn (hoặc theo từ khóa công việc) sang một khoảng ngày hoặc danh sách nhiều ngày đích khác nhau.',
+  parameters: {
+    type: Type.OBJECT,
+    properties: {
+      sourceDate: { type: Type.STRING, description: 'Ngày nguồn chứa các công việc cần sao chép theo định dạng YYYY-MM-DD (VD: "2026-08-10") hoặc cụm ngày như "10/08"' },
+      titleKeyword: { type: Type.STRING, description: 'Từ khóa tên công việc cụ thể nếu chỉ muốn copy 1 công việc nhất định (để trống nếu muốn copy toàn bộ công việc trong ngày nguồn)' },
+      startDateRange: { type: Type.STRING, description: 'Ngày bắt đầu của khoảng ngày đích cần sao chép sang dạng YYYY-MM-DD (VD: "2026-08-11")' },
+      endDateRange: { type: Type.STRING, description: 'Ngày kết thúc của khoảng ngày đích cần sao chép sang dạng YYYY-MM-DD (VD: "2026-08-14")' },
+      targetDates: {
+        type: Type.ARRAY,
+        items: { type: Type.STRING },
+        description: 'Danh sách các ngày đích cụ thể dạng YYYY-MM-DD nếu không dùng khoảng ngày (VD: ["2026-08-11", "2026-08-12", "2026-08-13", "2026-08-14"])',
+      },
     },
   },
 };
@@ -322,6 +346,7 @@ ${formattedLearnedPrompt}
             functionDeclarations: [
               taoLichHenDeclaration,
               dieuChinhLichHenDeclaration,
+              saoChepLichHenDeclaration,
               capNhatUuTienDeclaration,
               xoaLichHenDeclaration,
               tinhKhangDemDeclaration,
@@ -379,6 +404,20 @@ ${formattedLearnedPrompt}
         replyText =
           replyText ||
           `✅ Em đã điều chỉnh thời gian biểu cho **${titleStr}** sang ${dateStr || dayStr} ${timeStr} thành công theo yêu cầu của Bác sĩ!`;
+        executedCall = { name, args, result: { success: true } };
+      } else if (name === 'sao_chep_lich_hen') {
+        const srcStr = args.sourceDate || 'ngày nguồn';
+        let rangeStr = '';
+        if (args.startDateRange && args.endDateRange) {
+          rangeStr = `từ **${args.startDateRange}** đến **${args.endDateRange}**`;
+        } else if (args.targetDates && args.targetDates.length > 0) {
+          rangeStr = `cho **${args.targetDates.length} ngày** (${args.targetDates.join(', ')})`;
+        } else {
+          rangeStr = `sang các ngày đích mới`;
+        }
+        replyText =
+          replyText ||
+          `📋 Em đã sao chép công việc từ ngày **${srcStr}** ${rangeStr} thành công cho Bác sĩ!`;
         executedCall = { name, args, result: { success: true } };
       } else if (name === 'cap_nhat_uu_tien') {
         const priority = args.newPriority as PriorityLevel;

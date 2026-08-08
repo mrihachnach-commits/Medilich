@@ -60,6 +60,11 @@ Quy tắc Ma trận Eisenhower:
 - P3 (Thường quy): Siêu âm phòng khám, Lịch họp bệnh viện.
 - P4 (Nghỉ ngơi): Thời gian phục hồi. TUYỆT ĐỐI không chèn lịch trừ khi Bác sĩ yêu cầu rõ ràng.
 
+HỖ TRỢ ĐA TÁC VỤ & SAO CHÉP HÀNG LOẠT (BATCH OPERATIONS):
+- Bác sĩ có thể yêu cầu sao chép (copy) công việc từ một ngày sang một khoảng ngày (ví dụ: "copy công việc ngày 10/8 sang từ 11/8 đến 14/8" hoặc "nhân bản lịch ngày hôm nay cho cả tuần").
+- Hãy BẮT BUỘC ưu tiên gọi hàm \`sao_chep_lich_hen\` với các tham số \`sourceDate\`, \`startDateRange\`, \`endDateRange\` hoặc \`targetDates\`.
+- Ngoài ra Bác sĩ có thể yêu cầu nhiều công việc cùng lúc (vừa đổi lịch, vừa thêm lịch, vừa xóa lịch), hãy tự tin thực thi đầy đủ.
+
 YÊU CẦU TRÌNH BÀY & TRUYỀN TẢI THÔNG TIN (BẮT BUỘC TUÂN THỦ):
 1. Xưng em, gọi "Anh" hoặc "Bác sĩ" thân mật, tôn trọng, chuyên nghiệp.
 2. BẮT BUỘC DÙNG DẤU GẠCH ĐẦU DÒNG (\`-\`) CHO TẤT CẢ CÁC DANH SÁCH LỊCH LÀM VIỆC VÀ CHI TIẾT CÔNG VIỆC:
@@ -210,6 +215,37 @@ const dieuChinhLichHenDeclaration: FunctionDeclaration = {
       newDescription: {
         type: Type.STRING,
         description: 'Ghi chú mới bổ sung',
+      },
+    },
+  },
+};
+
+const saoChepLichHenDeclaration: FunctionDeclaration = {
+  name: 'sao_chep_lich_hen',
+  description: 'Sao chép (copy), nhân bản hàng loạt các công việc/lịch hẹn từ một ngày nguồn (hoặc theo từ khóa công việc) sang một khoảng ngày hoặc danh sách nhiều ngày đích khác nhau.',
+  parameters: {
+    type: Type.OBJECT,
+    properties: {
+      sourceDate: {
+        type: Type.STRING,
+        description: 'Ngày nguồn chứa các công việc cần sao chép theo định dạng YYYY-MM-DD (VD: "2026-08-10") hoặc cụm ngày như "10/08"',
+      },
+      titleKeyword: {
+        type: Type.STRING,
+        description: 'Từ khóa tên công việc cụ thể nếu chỉ muốn copy 1 công việc nhất định (để trống nếu muốn copy toàn bộ công việc trong ngày nguồn)',
+      },
+      startDateRange: {
+        type: Type.STRING,
+        description: 'Ngày bắt đầu của khoảng ngày đích cần sao chép sang dạng YYYY-MM-DD (VD: "2026-08-11")',
+      },
+      endDateRange: {
+        type: Type.STRING,
+        description: 'Ngày kết thúc của khoảng ngày đích cần sao chép sang dạng YYYY-MM-DD (VD: "2026-08-14")',
+      },
+      targetDates: {
+        type: Type.ARRAY,
+        items: { type: Type.STRING },
+        description: 'Danh sách các ngày đích cụ thể dạng YYYY-MM-DD nếu không dùng khoảng ngày (VD: ["2026-08-11", "2026-08-12", "2026-08-13", "2026-08-14"])',
       },
     },
   },
@@ -432,6 +468,7 @@ app.get('/api/schema', (req, res) => {
     functionDeclarations: [
       taoLichHenDeclaration,
       dieuChinhLichHenDeclaration,
+      saoChepLichHenDeclaration,
       capNhatUuTienDeclaration,
       xoaLichHenDeclaration,
       tinhKhangDemDeclaration,
@@ -566,6 +603,7 @@ ${formattedLearnedPrompt}
             functionDeclarations: [
               taoLichHenDeclaration,
               dieuChinhLichHenDeclaration,
+              saoChepLichHenDeclaration,
               capNhatUuTienDeclaration,
               xoaLichHenDeclaration,
               tinhKhangDemDeclaration,
@@ -649,6 +687,63 @@ ${formattedLearnedPrompt}
           replyText ||
           `✅ Em đã điều chỉnh thành công lịch làm việc cho **${titleStr}** sang ${dateStr || dayStr} ${timeStr}!`;
         executedCall = { name, args, result: { success: true, updatedCount } };
+      } else if (name === 'sao_chep_lich_hen') {
+        const srcDate = args.sourceDate || '';
+        const titleKw = (args.titleKeyword || '').toLowerCase();
+
+        // Find source events
+        const sourceEvents = scheduleEvents.filter((evt) => {
+          if (titleKw && evt.title.toLowerCase().includes(titleKw)) return true;
+          if (srcDate) {
+            if (evt.date === srcDate || srcDate.includes(evt.date) || evt.date.includes(srcDate)) return true;
+            if (srcDate.includes('/') && evt.date) {
+              const parts = srcDate.split('/');
+              if (parts.length >= 2) {
+                const dayP = parts[0].padStart(2, '0');
+                const monthP = parts[1].padStart(2, '0');
+                if (evt.date.endsWith(`-${monthP}-${dayP}`)) return true;
+              }
+            }
+          }
+          return false;
+        });
+
+        // Determine target dates
+        let targetDates: string[] = [];
+        if (args.startDateRange && args.endDateRange) {
+          const start = new Date(args.startDateRange);
+          const end = new Date(args.endDateRange);
+          for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            targetDates.push(`${yyyy}-${mm}-${dd}`);
+          }
+        } else if (Array.isArray(args.targetDates) && args.targetDates.length > 0) {
+          targetDates = args.targetDates;
+        }
+
+        const newClonedEvents: ScheduleEvent[] = [];
+        for (const tDate of targetDates) {
+          const tDayOfWeek = new Date(tDate).getDay();
+          for (const sEvt of sourceEvents) {
+            newClonedEvents.push({
+              ...sEvt,
+              id: `evt-copy-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+              date: tDate,
+              dayOfWeek: tDayOfWeek,
+            });
+          }
+        }
+
+        scheduleEvents = [...scheduleEvents, ...newClonedEvents];
+
+        const srcStr = srcDate || 'ngày nguồn';
+        const rangeStr = targetDates.length > 0 ? `sang ${targetDates.length} ngày (${targetDates[0]} đến ${targetDates[targetDates.length - 1]})` : 'sang các ngày đích';
+        replyText =
+          replyText ||
+          `📋 Em đã sao chép thành công **${sourceEvents.length} công việc** từ **${srcStr}** ${rangeStr} (tạo ra **${newClonedEvents.length} lịch mới**) cho Bác sĩ!`;
+        executedCall = { name, args, result: { success: true, createdCount: newClonedEvents.length, createdEvents: newClonedEvents } };
       } else if (name === 'cap_nhat_uu_tien') {
         const priority = args.newPriority as PriorityLevel;
         const kw = (args.eventTitleKeyword || '').toLowerCase();

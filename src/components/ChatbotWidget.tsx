@@ -107,6 +107,12 @@ export const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({
           + Lịch học MRI T3
         </button>
         <button
+          onClick={() => handleChipClick('Copy công việc ngày 10/8 sang các ngày từ 11/8 đến 14/8')}
+          className="bg-slate-800 hover:bg-slate-700 text-teal-300 px-2.5 py-1 rounded-full text-[11px] shrink-0 border border-slate-700/80 transition-all font-semibold"
+        >
+          📋 Copy 10/8 sang 11/8-14/8
+        </button>
+        <button
           onClick={() => handleChipClick('Đổi lịch học MRI từ tối T3 sang tối T5 từ 20:00 - 22:00')}
           className="bg-slate-800 hover:bg-slate-700 text-purple-300 px-2.5 py-1 rounded-full text-[11px] shrink-0 border border-slate-700/80 transition-all font-semibold"
         >
@@ -178,6 +184,8 @@ export const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({
                             ? '⚡ Đã tự động tạo lịch hẹn'
                             : msg.functionCalled.name === 'dieu_chinh_lich_hen'
                             ? '📅 Đã điều chỉnh / dời lịch hẹn'
+                            : msg.functionCalled.name === 'sao_chep_lich_hen'
+                            ? '📋 Đã sao chép lịch đa tác vụ'
                             : msg.functionCalled.name === 'cap_nhat_uu_tien'
                             ? '✏️ Đã cập nhật mức ưu tiên'
                             : msg.functionCalled.name === 'xoa_lich_hen'
