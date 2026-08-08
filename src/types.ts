@@ -161,4 +161,12 @@ export interface SystemSchemaDoc {
   }>;
 }
 
+export interface HistoryEntry {
+  id: string;
+  timestamp: string;
+  actionType: 'add' | 'update' | 'delete' | 'copy' | 'batch' | 'undo';
+  description: string;
+  snapshot: ScheduleEvent[];
+}
+
 

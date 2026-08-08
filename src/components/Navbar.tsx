@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, LayoutGrid, Mic, Sparkles, Stethoscope, Clock, Sliders, LogOut, Globe, ExternalLink, Menu, X } from 'lucide-react';
+import { Calendar, LayoutGrid, Mic, Sparkles, Stethoscope, Clock, Sliders, LogOut, Globe, ExternalLink, Menu, X, RotateCcw, History } from 'lucide-react';
 import { AppSettings } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -11,6 +11,9 @@ interface NavbarProps {
   onOpenChat: () => void;
   isVoiceActive: boolean;
   onToggleVoice: () => void;
+  historyCount?: number;
+  onOpenHistory?: () => void;
+  onUndo?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -21,6 +24,9 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenChat,
   isVoiceActive,
   onToggleVoice,
+  historyCount = 0,
+  onOpenHistory,
+  onUndo,
 }) => {
   const { user, logout, isAdmin } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -73,6 +79,36 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Desktop Quick Actions */}
         <div className="hidden md:flex items-center gap-1.5 sm:gap-2 shrink-0">
+          {/* Quick Undo Button */}
+          {onUndo && (
+            <button
+              onClick={onUndo}
+              disabled={historyCount === 0}
+              className="bg-slate-800 hover:bg-slate-700 disabled:opacity-40 border border-slate-700 text-amber-300 text-xs px-2.5 py-1.5 rounded-xl font-semibold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+              title="Hoàn tác (Undo) thao tác vừa thực hiện"
+            >
+              <RotateCcw className="w-3.5 h-3.5 text-amber-400" />
+              <span>Hoàn tác</span>
+            </button>
+          )}
+
+          {/* History Button */}
+          {onOpenHistory && (
+            <button
+              onClick={onOpenHistory}
+              className="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-cyan-300 text-xs px-2.5 py-1.5 rounded-xl font-semibold flex items-center gap-1.5 transition-all shadow-sm active:scale-95 relative"
+              title="Xem Nhật ký Chỉnh sửa & Hoàn tác theo thời gian"
+            >
+              <History className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Lịch Sử</span>
+              {historyCount > 0 && (
+                <span className="bg-indigo-600 text-white text-[10px] px-1.5 py-0.2 rounded-full font-bold">
+                  {historyCount}
+                </span>
+              )}
+            </button>
+          )}
+
           {/* Settings Button - Admin Only */}
           {isAdmin && (
             <button
@@ -146,6 +182,33 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           <div className="grid grid-cols-2 gap-2 pt-1">
+            {onUndo && (
+              <button
+                onClick={() => {
+                  onUndo();
+                  setIsMobileMenuOpen(false);
+                }}
+                disabled={historyCount === 0}
+                className="bg-slate-800 disabled:opacity-40 border border-slate-700 text-amber-300 text-xs px-3 py-2 rounded-xl font-semibold flex items-center justify-center gap-1.5"
+              >
+                <RotateCcw className="w-4 h-4 text-amber-400" />
+                <span>Hoàn Tác</span>
+              </button>
+            )}
+
+            {onOpenHistory && (
+              <button
+                onClick={() => {
+                  onOpenHistory();
+                  setIsMobileMenuOpen(false);
+                }}
+                className="bg-slate-800 border border-slate-700 text-cyan-300 text-xs px-3 py-2 rounded-xl font-semibold flex items-center justify-center gap-1.5"
+              >
+                <History className="w-4 h-4 text-cyan-400" />
+                <span>Lịch Sử ({historyCount})</span>
+              </button>
+            )}
+
             <button
               onClick={() => {
                 onToggleVoice();

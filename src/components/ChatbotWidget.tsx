@@ -107,6 +107,12 @@ export const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({
           + Lịch học MRI T3
         </button>
         <button
+          onClick={() => handleChipClick('Hoàn tác thao tác vừa thực hiện')}
+          className="bg-amber-950/80 hover:bg-amber-900/80 text-amber-300 px-2.5 py-1 rounded-full text-[11px] shrink-0 border border-amber-800/80 transition-all font-bold"
+        >
+          ↺ Hoàn tác vừa làm
+        </button>
+        <button
           onClick={() => handleChipClick('Copy công việc ngày 10/8 sang các ngày từ 11/8 đến 14/8')}
           className="bg-slate-800 hover:bg-slate-700 text-teal-300 px-2.5 py-1 rounded-full text-[11px] shrink-0 border border-slate-700/80 transition-all font-semibold"
         >

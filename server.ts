@@ -251,6 +251,21 @@ const saoChepLichHenDeclaration: FunctionDeclaration = {
   },
 };
 
+const hoanTacThaoTacDeclaration: FunctionDeclaration = {
+  name: 'hoan_tac_thao_tac',
+  description: 'Hoàn tác (Undo) lại thao tác chỉnh sửa, thêm, sửa, dời, copy hoặc xóa lịch gần nhất vừa thực hiện.',
+  parameters: {
+    type: Type.OBJECT,
+    properties: {
+      steps: {
+        type: Type.INTEGER,
+        description: 'Số bước thao tác muốn hoàn tác lùi lại (Mặc định: 1)',
+      },
+    },
+  },
+};
+
+
 // dongBoCalendarDeclaration removed
 
 const xoaLichHenDeclaration: FunctionDeclaration = {
@@ -469,6 +484,7 @@ app.get('/api/schema', (req, res) => {
       taoLichHenDeclaration,
       dieuChinhLichHenDeclaration,
       saoChepLichHenDeclaration,
+      hoanTacThaoTacDeclaration,
       capNhatUuTienDeclaration,
       xoaLichHenDeclaration,
       tinhKhangDemDeclaration,
@@ -604,6 +620,7 @@ ${formattedLearnedPrompt}
               taoLichHenDeclaration,
               dieuChinhLichHenDeclaration,
               saoChepLichHenDeclaration,
+              hoanTacThaoTacDeclaration,
               capNhatUuTienDeclaration,
               xoaLichHenDeclaration,
               tinhKhangDemDeclaration,
@@ -744,6 +761,12 @@ ${formattedLearnedPrompt}
           replyText ||
           `📋 Em đã sao chép thành công **${sourceEvents.length} công việc** từ **${srcStr}** ${rangeStr} (tạo ra **${newClonedEvents.length} lịch mới**) cho Bác sĩ!`;
         executedCall = { name, args, result: { success: true, createdCount: newClonedEvents.length, createdEvents: newClonedEvents } };
+      } else if (name === 'hoan_tac_thao_tac') {
+        const steps = args.steps || 1;
+        replyText =
+          replyText ||
+          `🔄 Em đã hoàn tác (Undo) thành công ${steps} thao tác vừa làm cho Bác sĩ! Lịch làm việc đã được khôi phục về trạng thái trước đó.`;
+        executedCall = { name, args, result: { success: true, steps } };
       } else if (name === 'cap_nhat_uu_tien') {
         const priority = args.newPriority as PriorityLevel;
         const kw = (args.eventTitleKeyword || '').toLowerCase();

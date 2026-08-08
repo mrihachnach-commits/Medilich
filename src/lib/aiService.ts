@@ -125,6 +125,21 @@ export const saoChepLichHenDeclaration: FunctionDeclaration = {
   },
 };
 
+export const hoanTacThaoTacDeclaration: FunctionDeclaration = {
+  name: 'hoan_tac_thao_tac',
+  description: 'Hoàn tác (Undo) lại thao tác chỉnh sửa, thêm, sửa, dời, copy hoặc xóa lịch gần nhất vừa thực hiện.',
+  parameters: {
+    type: Type.OBJECT,
+    properties: {
+      steps: {
+        type: Type.INTEGER,
+        description: 'Số bước thao tác muốn hoàn tác lùi lại (Mặc định: 1)',
+      },
+    },
+  },
+};
+
+
 export const tinhKhangDemDeclaration: FunctionDeclaration = {
   name: 'tinh_khang_dem',
   description: 'Tính toán khoảng nghỉ đệm (Buffer time) và cảnh báo xung đột giữa ca bệnh viện và buổi học tối.',
@@ -347,6 +362,7 @@ ${formattedLearnedPrompt}
               taoLichHenDeclaration,
               dieuChinhLichHenDeclaration,
               saoChepLichHenDeclaration,
+              hoanTacThaoTacDeclaration,
               capNhatUuTienDeclaration,
               xoaLichHenDeclaration,
               tinhKhangDemDeclaration,
@@ -419,6 +435,12 @@ ${formattedLearnedPrompt}
           replyText ||
           `📋 Em đã sao chép công việc từ ngày **${srcStr}** ${rangeStr} thành công cho Bác sĩ!`;
         executedCall = { name, args, result: { success: true } };
+      } else if (name === 'hoan_tac_thao_tac') {
+        const steps = args.steps || 1;
+        replyText =
+          replyText ||
+          `🔄 Em đã hoàn tác (Undo) thành công ${steps} thao tác vừa làm cho Bác sĩ! Lịch làm việc đã được khôi phục về trạng thái trước đó.`;
+        executedCall = { name, args, result: { success: true, steps } };
       } else if (name === 'cap_nhat_uu_tien') {
         const priority = args.newPriority as PriorityLevel;
         replyText =
