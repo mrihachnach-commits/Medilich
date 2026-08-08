@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, LayoutGrid, ShieldCheck, Mic, Sparkles, Stethoscope, Clock, Sliders, LogOut, Globe, ExternalLink, Database, Menu, X } from 'lucide-react';
+import { Calendar, LayoutGrid, Mic, Sparkles, Stethoscope, Clock, Sliders, LogOut, Globe, ExternalLink, Menu, X } from 'lucide-react';
 import { AppSettings } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -73,17 +73,6 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Desktop Quick Actions */}
         <div className="hidden md:flex items-center gap-1.5 sm:gap-2 shrink-0">
-          <div className="hidden lg:flex bg-emerald-950/80 border border-emerald-800/80 text-emerald-300 text-xs px-2.5 py-1.5 rounded-xl items-center gap-1.5 font-medium shadow-sm" title="Dữ liệu lịch làm việc và cài đặt được lưu trữ trực tuyến vĩnh viễn trên Firestore Cloud Database">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <Database className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Firestore: Lưu Vĩnh Viễn</span>
-          </div>
-
-          <div className="hidden xl:flex bg-emerald-950/80 border border-emerald-800/80 text-emerald-300 text-xs px-2.5 py-1.5 rounded-xl items-center gap-1.5 font-medium shadow-sm">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Bảo vệ Tối Nghỉ Ngơi: 100%</span>
-          </div>
-
           {/* Settings Button - Admin Only */}
           {isAdmin && (
             <button
@@ -154,9 +143,6 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="md:hidden bg-slate-900/95 border-b border-slate-800 px-4 py-3 space-y-3 animate-in slide-in-from-top duration-200 shadow-2xl">
           <div className="flex items-center justify-between text-xs pb-2 border-b border-slate-800 text-slate-300">
             <span className="font-semibold text-indigo-300">{settings.hospitalName || 'BV Nội tiết Trung ương'}</span>
-            <span className="bg-emerald-950 border border-emerald-800 text-emerald-300 px-2 py-0.5 rounded-full text-[10px] flex items-center gap-1">
-              <Database className="w-3 h-3 text-emerald-400" /> Cloud Firestore Sync
-            </span>
           </div>
 
           <div className="grid grid-cols-2 gap-2 pt-1">

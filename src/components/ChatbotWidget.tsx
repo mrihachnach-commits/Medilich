@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import Markdown from 'react-markdown';
 import { ChatMessage } from '../types';
 import { Sparkles, Send, Mic, MicOff, X, Bot, User, Cpu, CheckCircle2, Zap, Brain } from 'lucide-react';
 
@@ -150,21 +151,43 @@ export const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({
                     : 'bg-slate-900 border border-slate-800 text-slate-200 rounded-tl-xs'
                 }`}
               >
-                <div className="whitespace-pre-wrap leading-relaxed">{msg.text}</div>
+                {isUser ? (
+                  <div className="whitespace-pre-wrap leading-relaxed">{msg.text}</div>
+                ) : (
+                  <div className="markdown-body leading-relaxed text-slate-100 text-xs space-y-1">
+                    <Markdown>{msg.text}</Markdown>
+                  </div>
+                )}
 
                 {/* Render Function Calling Details if Executed */}
                 {msg.functionCalled && (
-                  <div className="mt-2 pt-2 border-t border-slate-800 text-[11px] font-mono bg-slate-950/80 p-2 rounded-xl border border-slate-800 text-indigo-300 space-y-1">
-                    <div className="flex items-center justify-between text-slate-400 text-[10px]">
-                      <span className="flex items-center gap-1 font-bold text-indigo-400">
-                        <Cpu className="w-3 h-3" /> Function Called:
-                      </span>
-                      <span className="text-emerald-400 font-bold">Success</span>
+                  <div className="mt-2.5 pt-2 border-t border-slate-800/80 text-[11px] bg-slate-950/90 p-2.5 rounded-xl border border-indigo-900/50 text-indigo-200 flex items-center justify-between gap-2 shadow-inner">
+                    <div className="flex items-center gap-2 overflow-hidden">
+                      <div className="p-1 rounded-lg bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 shrink-0">
+                        <Zap className="w-3.5 h-3.5" />
+                      </div>
+                      <div className="truncate">
+                        <span className="font-bold text-slate-200">
+                          {msg.functionCalled.name === 'tao_lich_hen'
+                            ? '⚡ Đã tự động tạo lịch hẹn'
+                            : msg.functionCalled.name === 'cap_nhat_uu_tien'
+                            ? '✏️ Đã cập nhật mức ưu tiên'
+                            : msg.functionCalled.name === 'xoa_lich_hen'
+                            ? '🗑️ Đã xóa lịch thành công'
+                            : msg.functionCalled.name === 'ghi_nho_thoi_quen'
+                            ? '🧠 Đã lưu thói quen mới vào Prompt Phụ'
+                            : '⚙️ Đã thực thi lệnh AI'}
+                        </span>
+                        {msg.functionCalled.args?.title && (
+                          <span className="block text-[10px] text-indigo-300 font-mono truncate">
+                            {msg.functionCalled.args.title}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    <div className="font-bold text-indigo-200">{msg.functionCalled.name}()</div>
-                    <div className="text-slate-400 text-[10px] truncate">
-                      Args: {JSON.stringify(msg.functionCalled.args)}
-                    </div>
+                    <span className="text-[10px] bg-emerald-950 text-emerald-300 border border-emerald-800/80 px-2 py-0.5 rounded-full font-bold flex items-center gap-1 shrink-0">
+                      <CheckCircle2 className="w-3 h-3 text-emerald-400" /> Hoàn thành
+                    </span>
                   </div>
                 )}
 
