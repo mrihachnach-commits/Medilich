@@ -225,6 +225,7 @@ export default function App() {
         shopaikeyApiKey: settings.shopaikeyApiKey,
         shopaikeyBaseUrl: settings.shopaikeyBaseUrl,
         currentEvents: events,
+        clientDate: new Date().toISOString(),
       });
 
       const aiMsg: ChatMessage = {
@@ -311,8 +312,11 @@ export default function App() {
 
           let targetDates: string[] = [];
           if (args.startDateRange && args.endDateRange) {
-            const start = new Date(args.startDateRange);
-            const end = new Date(args.endDateRange);
+            const [sYear, sMonth, sDay] = args.startDateRange.split('-').map(Number);
+            const [eYear, eMonth, eDay] = args.endDateRange.split('-').map(Number);
+            const start = new Date(sYear, sMonth - 1, sDay);
+            const end = new Date(eYear, eMonth - 1, eDay);
+            
             for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
               const yyyy = d.getFullYear();
               const mm = String(d.getMonth() + 1).padStart(2, '0');
@@ -324,7 +328,8 @@ export default function App() {
           }
 
           for (const tDate of targetDates) {
-            const tDayOfWeek = new Date(tDate).getDay();
+            const [ty, tm, td] = tDate.split('-').map(Number);
+            const tDayOfWeek = new Date(ty, tm - 1, td).getDay();
             for (const sEvt of sourceEvents) {
               const newCloned: ScheduleEvent = {
                 ...sEvt,

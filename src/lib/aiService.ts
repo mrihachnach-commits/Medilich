@@ -198,6 +198,7 @@ export interface ChatPayload {
   shopaikeyApiKey?: string;
   shopaikeyBaseUrl?: string;
   currentEvents?: ScheduleEvent[];
+  clientDate?: string;
 }
 
 export async function processChatRequest(payload: ChatPayload): Promise<{
@@ -242,6 +243,7 @@ async function processChatClientSide(payload: ChatPayload) {
     shopaikeyApiKey,
     shopaikeyBaseUrl,
     currentEvents = [],
+    clientDate,
   } = payload;
 
   // Determine API key based on provider
@@ -330,24 +332,39 @@ ${formattedLearnedPrompt}
     }
   }
 
-  const now = new Date();
+  const now = clientDate ? new Date(clientDate) : new Date();
   const currentScheduleSummary = currentEvents
     .filter((e) => {
       if (!e.date) return true;
-      const eventDate = new Date(e.date);
-      const diffTime = eventDate.getTime() - now.getTime();
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      return diffDays >= -1 && diffDays <= 7;
+      // Parse e.date as local date to prevent timezone shifts
+      const [y, m, d] = e.date.split('-').map(Number);
+      const eventDate = new Date(y, m - 1, d);
+      
+      const todayDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const diffTime = eventDate.getTime() - todayDate.getTime();
+      const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+      
+      // Keep events from past 30 days to next 60 days
+      return diffDays >= -30 && diffDays <= 60;
     })
-    .slice(0, 15)
+    .slice(0, 100)
     .map((e) => `${e.id}|${e.date}|${e.startTime}-${e.endTime}|${e.title}|${e.priority}`)
     .join('\n');
+
+  const weekdayNames = ['Chủ Nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+  const currentDayOfWeekName = weekdayNames[now.getDay()];
+  const currentFormattedDate = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`;
+  const currentFormattedTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  const currentDateContext = `[Thời Gian Hiện Tại]
+- Hôm nay là: ${currentDayOfWeekName}, ngày ${currentFormattedDate}
+- Giờ hệ thống hiện tại: ${currentFormattedTime}
+- Định dạng ngày được dùng trong hệ thống là YYYY-MM-DD. Hãy chuyển đổi các ngày tương đối (hôm nay, ngày mai, thứ hai tới,...) thành ngày YYYY-MM-DD chính xác dựa trên ngày hôm nay là ${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}.`;
 
   contents.push({
     role: 'user',
     parts: [
       {
-        text: `[Context: Current Schedule]\n${currentScheduleSummary}\n\n[Message]\n${message}`,
+        text: `${currentDateContext}\n\n[Context: Current Schedule]\n${currentScheduleSummary}\n\n[Message]\n${message}`,
       },
     ],
   });

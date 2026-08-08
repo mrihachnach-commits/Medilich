@@ -524,7 +524,7 @@ app.get('/api/schema', (req, res) => {
 // Gemini Chat & Function Calling Endpoint
 app.post('/api/chat', async (req, res) => {
   try {
-    const { message, history, systemInstruction, learnedPrompt, learnedMemories, aiProvider, aiModel, geminiApiKey, shopaikeyApiKey, shopaikeyBaseUrl, currentEvents } = req.body;
+    const { message, history, systemInstruction, learnedPrompt, learnedMemories, aiProvider, aiModel, geminiApiKey, shopaikeyApiKey, shopaikeyBaseUrl, currentEvents, clientDate } = req.body;
 
     if (!message || typeof message !== 'string') {
       return res.status(400).json({ error: 'Nội dung tin nhắn không hợp lệ' });
@@ -586,27 +586,42 @@ ${formattedLearnedPrompt}
     // 2. Filter & Condense Schedule Summary
     const activeEvents: ScheduleEvent[] = Array.isArray(currentEvents) ? currentEvents : scheduleEvents;
     
-    const now = new Date();
+    const now = clientDate ? new Date(clientDate) : new Date();
     const currentScheduleSummary = activeEvents
       .filter(e => {
         if (!e.date) return true;
-        const eventDate = new Date(e.date);
-        const diffTime = eventDate.getTime() - now.getTime();
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        return diffDays >= -1 && diffDays <= 7;
+        // Parse e.date as local date to prevent timezone shifts
+        const [y, m, d] = e.date.split('-').map(Number);
+        const eventDate = new Date(y, m - 1, d);
+        
+        const todayDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const diffTime = eventDate.getTime() - todayDate.getTime();
+        const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+        
+        // Keep events from past 30 days to next 60 days
+        return diffDays >= -30 && diffDays <= 60;
       })
-      .slice(0, 15) // Condense even more
+      .slice(0, 100)
       .map(
         (e) => `${e.id}|${e.date}|${e.startTime}-${e.endTime}|${e.title}|${e.priority}`
       )
       .join('\n');
+
+    const weekdayNames = ['Chủ Nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+    const currentDayOfWeekName = weekdayNames[now.getDay()];
+    const currentFormattedDate = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`;
+    const currentFormattedTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    const currentDateContext = `[Thời Gian Hiện Tại]
+- Hôm nay là: ${currentDayOfWeekName}, ngày ${currentFormattedDate}
+- Giờ hệ thống hiện tại: ${currentFormattedTime}
+- Định dạng ngày được dùng trong hệ thống là YYYY-MM-DD. Hãy chuyển đổi các ngày tương đối (hôm nay, ngày mai, thứ hai tới,...) thành ngày YYYY-MM-DD chính xác dựa trên ngày hôm nay là ${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}.`;
 
     // Append the latest context and message
     contents.push({
       role: 'user',
       parts: [
         {
-          text: `[Context: Current Schedule]\n${currentScheduleSummary}\n\n[Message]\n${message}`
+          text: `${currentDateContext}\n\n[Context: Current Schedule]\n${currentScheduleSummary}\n\n[Message]\n${message}`
         }
       ]
     });
@@ -730,8 +745,11 @@ ${formattedLearnedPrompt}
         // Determine target dates
         let targetDates: string[] = [];
         if (args.startDateRange && args.endDateRange) {
-          const start = new Date(args.startDateRange);
-          const end = new Date(args.endDateRange);
+          const [sYear, sMonth, sDay] = args.startDateRange.split('-').map(Number);
+          const [eYear, eMonth, eDay] = args.endDateRange.split('-').map(Number);
+          const start = new Date(sYear, sMonth - 1, sDay);
+          const end = new Date(eYear, eMonth - 1, eDay);
+          
           for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
             const yyyy = d.getFullYear();
             const mm = String(d.getMonth() + 1).padStart(2, '0');
@@ -744,7 +762,8 @@ ${formattedLearnedPrompt}
 
         const newClonedEvents: ScheduleEvent[] = [];
         for (const tDate of targetDates) {
-          const tDayOfWeek = new Date(tDate).getDay();
+          const [ty, tm, td] = tDate.split('-').map(Number);
+          const tDayOfWeek = new Date(ty, tm - 1, td).getDay();
           for (const sEvt of sourceEvents) {
             newClonedEvents.push({
               ...sEvt,
