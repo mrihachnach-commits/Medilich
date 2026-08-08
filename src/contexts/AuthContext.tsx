@@ -3,6 +3,8 @@ import {
   onAuthStateChanged, 
   signInWithPopup, 
   GoogleAuthProvider, 
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
   signOut, 
   User as FirebaseUser 
 } from 'firebase/auth';
@@ -14,6 +16,8 @@ interface AuthContextType {
   loading: boolean;
   isAdmin: boolean;
   login: () => Promise<void>;
+  loginWithEmail: (email: string, pass: string) => Promise<void>;
+  registerWithEmail: (email: string, pass: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -34,18 +38,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const userSnap = await getDoc(userRef);
         
         if (!userSnap.exists()) {
-          // Check if this email should be admin (bootstrap)
-          // Defaulting to user's email if provided in metadata or just false
           const isInitialAdmin = firebaseUser.email === 'hoanghiep1296@gmail.com';
           
           await setDoc(userRef, {
             uid: firebaseUser.uid,
-            email: firebaseUser.email,
+            email: firebaseUser.email || '',
             isAdmin: isInitialAdmin,
             createdAt: new Date().toISOString(),
           });
 
-          // Also set in admins collection if bootstrap
           if (isInitialAdmin) {
             await setDoc(doc(db, 'admins', firebaseUser.uid), {
               uid: firebaseUser.uid,
@@ -72,12 +73,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await signInWithPopup(auth, provider);
   };
 
+  const loginWithEmail = async (emailInput: string, pass: string) => {
+    const formattedEmail = emailInput.includes('@') ? emailInput : `${emailInput.trim()}@medilich.app`;
+    await signInWithEmailAndPassword(auth, formattedEmail, pass);
+  };
+
+  const registerWithEmail = async (emailInput: string, pass: string) => {
+    const formattedEmail = emailInput.includes('@') ? emailInput : `${emailInput.trim()}@medilich.app`;
+    await createUserWithEmailAndPassword(auth, formattedEmail, pass);
+  };
+
   const logout = async () => {
     await signOut(auth);
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, isAdmin, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, isAdmin, login, loginWithEmail, registerWithEmail, logout }}>
       {children}
     </AuthContext.Provider>
   );

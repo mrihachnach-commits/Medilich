@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, LayoutGrid, ShieldCheck, Mic, Cpu, Sparkles, Stethoscope, Clock, Sliders, LogOut, User as UserIcon, Globe, ExternalLink } from 'lucide-react';
+import { Calendar, LayoutGrid, ShieldCheck, Mic, Cpu, Sparkles, Stethoscope, Clock, Sliders, LogOut, User as UserIcon, Globe, ExternalLink, Database } from 'lucide-react';
 import { AppSettings } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -72,6 +72,12 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Sync & Protected Rest Badges */}
         <div className="flex items-center gap-2 flex-wrap">
+          <div className="hidden sm:flex bg-emerald-950/80 border border-emerald-800/80 text-emerald-300 text-xs px-2.5 py-1.5 rounded-xl items-center gap-1.5 font-medium shadow-sm" title="Dữ liệu lịch làm việc và cài đặt được lưu trữ trực tuyến vĩnh viễn trên Firestore Cloud Database">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <Database className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Firestore: Lưu Vĩnh Viễn</span>
+          </div>
+
           <div className="hidden lg:flex bg-emerald-950/80 border border-emerald-800/80 text-emerald-300 text-xs px-2.5 py-1.5 rounded-xl items-center gap-1.5 font-medium shadow-sm">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
             <span>Bảo vệ Tối Nghỉ Ngơi: 100%</span>

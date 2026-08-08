@@ -11,12 +11,14 @@ import { SettingsModal } from './components/SettingsModal';
 import { useAuth } from './contexts/AuthContext';
 import { LoginScreen } from './components/LoginScreen';
 import { 
-  getEvents, 
+  subscribeToEvents,
+  subscribeToSettings,
   createEvent, 
   updateEvent as fsUpdateEvent, 
   deleteEvent as fsDeleteEvent, 
-  getUserSettings, 
-  saveUserSettings 
+  saveUserSettings,
+  getUserDoc,
+  markUserSeeded
 } from './lib/firestoreUtils';
 
 export default function App() {
@@ -38,33 +40,47 @@ export default function App() {
     },
   ]);
 
-  // Load events and settings from Firestore when user logs in
+  // Real-time synchronization with Firestore for Events & Settings
   useEffect(() => {
-    if (user) {
-      const loadUserData = async () => {
+    if (!user) return;
+
+    let isSeeding = false;
+
+    // Real-time listener for user's schedule events
+    const unsubscribeEvents = subscribeToEvents(user.uid, async (fsEvents) => {
+      if (fsEvents && fsEvents.length > 0) {
+        setEvents(fsEvents as ScheduleEvent[]);
+      } else if (!isSeeding) {
+        isSeeding = true;
         try {
-          const fsEvents = await getEvents(user.uid);
-          if (fsEvents && fsEvents.length > 0) {
-            setEvents(fsEvents as ScheduleEvent[]);
-          } else {
-            // Seed with initial events if none found for new user
+          const userDoc = await getUserDoc(user.uid);
+          if (!userDoc?.hasBeenSeeded) {
             for (const event of INITIAL_EVENTS) {
               await createEvent(user.uid, event);
             }
-            const seededEvents = await getEvents(user.uid);
-            setEvents(seededEvents as ScheduleEvent[]);
+            await markUserSeeded(user.uid);
+          } else {
+            setEvents([]);
           }
-
-          const fsSettings = await getUserSettings(user.uid);
-          if (fsSettings) {
-            setSettings(fsSettings);
-          }
-        } catch (error) {
-          console.error("Error loading user data from Firestore:", error);
+        } catch (err) {
+          console.error("Error seeding default events to Firestore:", err);
         }
-      };
-      loadUserData();
-    }
+      }
+    });
+
+    // Real-time listener for user settings
+    const unsubscribeSettings = subscribeToSettings(user.uid, (fsSettings) => {
+      if (fsSettings) {
+        setSettings(fsSettings);
+      } else {
+        saveUserSettings(user.uid, DEFAULT_APP_SETTINGS);
+      }
+    });
+
+    return () => {
+      unsubscribeEvents();
+      unsubscribeSettings();
+    };
   }, [user]);
 
   // Web Speech API Voice Recognition
@@ -115,7 +131,10 @@ export default function App() {
     if (user) {
       const created = await createEvent(user.uid, newEventData);
       if (created) {
-        setEvents((prev) => [...prev, created as ScheduleEvent]);
+        setEvents((prev) => {
+          if (prev.some((e) => e.id === created.id)) return prev;
+          return [...prev, created as ScheduleEvent];
+        });
       }
     }
   };
@@ -192,7 +211,10 @@ export default function App() {
           const newEvent = { ...result.createdEvent, userId: user.uid };
           const created = await createEvent(user.uid, newEvent);
           if (created) {
-            setEvents(prev => [...prev, created as ScheduleEvent]);
+            setEvents(prev => {
+              if (prev.some(e => e.id === created.id)) return prev;
+              return [...prev, created as ScheduleEvent];
+            });
           }
         } else if (name === 'xoa_lich_hen') {
           const kw = (args.titleKeyword || '').toLowerCase();
