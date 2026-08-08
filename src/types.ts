@@ -94,6 +94,7 @@ export interface AppSettings {
   geminiApiKey?: string;
   shopaikeyApiKey?: string;
   shopaikeyBaseUrl?: string;
+  appDomain?: string;
 }
 
 export const DEFAULT_LEARNED_MEMORIES: string[] = [
@@ -141,6 +142,7 @@ export const DEFAULT_APP_SETTINGS: AppSettings = {
   aiProvider: 'gemini',
   aiModel: 'gemini-1.5-flash',
   shopaikeyBaseUrl: 'https://api.shopaikey.com/v1',
+  appDomain: 'https://medilich.vercel.app',
 };
 
 export interface SystemSchemaDoc {

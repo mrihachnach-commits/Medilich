@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, LayoutGrid, ShieldCheck, Mic, Cpu, Sparkles, Stethoscope, Clock, Sliders, LogOut, User as UserIcon } from 'lucide-react';
+import { Calendar, LayoutGrid, ShieldCheck, Mic, Cpu, Sparkles, Stethoscope, Clock, Sliders, LogOut, User as UserIcon, Globe, ExternalLink } from 'lucide-react';
 import { AppSettings } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -51,8 +51,21 @@ export const Navbar: React.FC<NavbarProps> = ({
                 {settings.hospitalName || 'BV Nội tiết Trung ương'}
               </span>
             </div>
-            <p className="text-xs text-slate-400">
-              {settings.siteTitle}: {settings.appDescription}
+            <p className="text-xs text-slate-400 flex items-center gap-2">
+              <span>{settings.siteTitle}: {settings.appDescription}</span>
+              {settings.appDomain && (
+                <a
+                  href={settings.appDomain}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hidden sm:inline-flex items-center gap-1 text-[11px] font-mono text-cyan-400 bg-cyan-950/80 hover:bg-cyan-900/80 border border-cyan-800/80 px-2 py-0.5 rounded-md transition-colors"
+                  title="Truy cập domain chính thức"
+                >
+                  <Globe className="w-3 h-3 text-cyan-400" />
+                  <span>{settings.appDomain.replace(/^https?:\/\//, '')}</span>
+                  <ExternalLink className="w-2.5 h-2.5 opacity-70" />
+                </a>
+              )}
             </p>
           </div>
         </div>

@@ -241,6 +241,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-indigo-500"
               />
             </div>
+
+            <div>
+              <label className="block text-slate-300 font-medium mb-1">Domain / URL Website Tùy Chỉnh</label>
+              <input
+                type="text"
+                placeholder="https://medilich.vercel.app"
+                value={formData.appDomain || 'https://medilich.vercel.app'}
+                onChange={(e) => setFormData({ ...formData, appDomain: e.target.value })}
+                className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-cyan-300 font-mono focus:outline-none focus:border-cyan-500"
+              />
+            </div>
           </div>
 
           {/* SECTION 1.5: Cấu Hình API Trợ Lý AI */}
