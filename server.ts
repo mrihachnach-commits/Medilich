@@ -236,6 +236,14 @@ function getGeminiAI(options?: { aiProvider?: string; geminiApiKey?: string; sho
   // update the API key in clientOptions if it changed
   clientOptions.apiKey = apiKey || 'dummy-key';
 
+  if (apiKey) {
+    clientOptions.httpOptions.headers = {
+      ...(clientOptions.httpOptions.headers || {}),
+      'x-goog-api-key': apiKey,
+      'Authorization': `Bearer ${apiKey}`,
+    };
+  }
+
   if (baseUrl) {
     clientOptions.httpOptions.baseUrl = baseUrl;
   }

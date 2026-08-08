@@ -161,19 +161,15 @@ async function processChatClientSide(payload: ChatPayload) {
     currentEvents = [],
   } = payload;
 
-  // Determine API key
+  // Determine API key based on provider
   const envKey = typeof import.meta !== 'undefined' ? (import.meta as any).env?.VITE_GEMINI_API_KEY : undefined;
-  let apiKey = geminiApiKey || envKey;
+  let apiKey = envKey;
   let baseUrl: string | undefined = undefined;
-
-  const clientOptions: any = {
-    apiKey: apiKey || 'dummy-key',
-  };
+  let apiVersion: string | undefined = undefined;
 
   if (aiProvider === 'shopaikey') {
-    apiKey = shopaikeyApiKey || apiKey;
+    apiKey = shopaikeyApiKey || geminiApiKey || envKey;
     let rawBaseUrl = shopaikeyBaseUrl || 'https://api.shopaikey.com';
-    let apiVersion = undefined;
 
     if (rawBaseUrl.endsWith('/v1')) {
       rawBaseUrl = rawBaseUrl.slice(0, -3);
@@ -184,22 +180,36 @@ async function processChatClientSide(payload: ChatPayload) {
     } else if (rawBaseUrl.endsWith('/')) {
       rawBaseUrl = rawBaseUrl.slice(0, -1);
     }
-
     baseUrl = rawBaseUrl;
-    if (apiVersion) {
-      clientOptions.httpOptions = { apiVersion };
-    }
-  }
-
-  if (baseUrl) {
-    clientOptions.httpOptions = { ...(clientOptions.httpOptions || {}), baseUrl };
+  } else {
+    // default to gemini
+    apiKey = geminiApiKey || envKey;
   }
 
   if (!apiKey || apiKey === 'dummy-key') {
     return {
-      reply: '⚠️ **Thông báo**: Trang web đang chạy ở chế độ tĩnh (Vercel). Để sử dụng AI Chatbot, Bác sĩ vui lòng vào mục **Cài đặt hệ thống (biểu tượng bánh răng ⚙️)** và nhập **Google Gemini API Key** của Bác sĩ nhé!',
+      reply: '⚠️ **Thông báo**: Chưa tìm thấy API Key hợp lệ. Bác sĩ vui lòng vào mục **Cài đặt hệ thống (biểu tượng bánh răng ⚙️)** -> Chọn nguồn API (Google Gemini hoặc ShopAIKey) và nhập API Key của Bác sĩ nhé!',
     };
   }
+
+  const httpOptions: any = {
+    headers: {
+      'User-Agent': 'aistudio-build',
+      ...(apiKey ? { 'x-goog-api-key': apiKey, 'Authorization': `Bearer ${apiKey}` } : {}),
+    },
+  };
+
+  if (baseUrl) {
+    httpOptions.baseUrl = baseUrl;
+  }
+  if (apiVersion) {
+    httpOptions.apiVersion = apiVersion;
+  }
+
+  const clientOptions: any = {
+    apiKey: apiKey,
+    httpOptions,
+  };
 
   const ai = new GoogleGenAI(clientOptions);
   const selectedModel = aiModel || 'gemini-1.5-flash';
@@ -358,8 +368,14 @@ ${formattedLearnedPrompt}
     };
   } catch (err: any) {
     console.error('Client Gemini Error:', err);
+    const errMsg = err?.message || '';
+    if (errMsg.includes('proxy_api_error') || errMsg.includes('Invalid token') || errMsg.includes('API_KEY_INVALID')) {
+      return {
+        reply: `⚠️ **Lỗi xác thực API Key (${aiProvider === 'shopaikey' ? 'ShopAIKey' : 'Google Gemini'})**: Token không hợp lệ. Bác sĩ vui lòng mở **Cài đặt hệ thống (⚙️)** -> **Cấu hình Nguồn API Trợ Lý AI** và cập nhật đúng API Key/Token nhé!`,
+      };
+    }
     return {
-      reply: `⚠️ Không thể kết nối Gemini API (${err?.message || 'Lỗi mạng'}). Vui lòng kiểm tra lại API Key trong mục Cài đặt.`,
+      reply: `⚠️ Không thể kết nối Gemini API (${errMsg || 'Lỗi mạng'}). Bác sĩ vui lòng kiểm tra lại API Key trong mục Cài đặt.`,
     };
   }
 }
