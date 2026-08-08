@@ -49,6 +49,8 @@ let syncStatus = { googleConnected: false, totalSyncedEvents: 0 };
 
 // System Instruction for Gemini AI Assistant
 const DOCTOR_SYSTEM_INSTRUCTION = `Trợ lý AI Quản lý Lịch Thông Minh dành riêng cho Bác sĩ Chẩn đoán Hình ảnh - Bệnh viện Nội tiết TƯ.
+BẮT BUỘC: Bạn PHẢI tuân thủ nghiêm ngặt mọi hướng dẫn trong prompt chính và prompt phụ này. Tuyệt đối không được bỏ qua bất kỳ quy tắc nào.
+
 Bối cảnh hoạt động:
 - Thứ 2 đến Thứ 6: Ca hành chính bệnh viện (Siêu âm, MRI, can thiệp RFA, VABB, Sinh thiết).
 - Buổi tối (từ 19:30+): Học tập chuyên môn (MRI/CLVT) hoặc Nghỉ ngơi cá nhân (P4).

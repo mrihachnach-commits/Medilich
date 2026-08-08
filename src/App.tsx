@@ -256,6 +256,7 @@ export default function App() {
           const newEvent = { ...result.createdEvent, userId: user.uid };
           const created = await createEvent(user.uid, newEvent);
           if (created) {
+            addToHistory('add', `Chatbot đã thêm lịch: ${created.title}`);
             setEvents(prev => {
               if (prev.some(e => e.id === created.id)) return prev;
               return [...prev, created as ScheduleEvent];
@@ -334,12 +335,15 @@ export default function App() {
               await handleAddEvent(newCloned);
             }
           }
+          addToHistory('copy', `Chatbot đã sao chép ${sourceEvents.length} công việc sang ${targetDates.length} ngày`);
         } else if (name === 'xoa_lich_hen') {
           const kw = (args.titleKeyword || '').toLowerCase();
           const toDelete = events.filter(e => e.title.toLowerCase().includes(kw));
           for (const evt of toDelete) {
             await handleDeleteEvent(evt.id);
           }
+        } else if (name === 'hoan_tac_thao_tac') {
+          handleUndo(args.steps || 1);
         } else if (name === 'cap_nhat_uu_tien') {
           const kw = (args.eventTitleKeyword || '').toLowerCase();
           const priority = args.newPriority;
