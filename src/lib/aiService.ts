@@ -80,6 +80,27 @@ export const xoaLichHenDeclaration: FunctionDeclaration = {
   },
 };
 
+export const dieuChinhLichHenDeclaration: FunctionDeclaration = {
+  name: 'dieu_chinh_lich_hen',
+  description: 'Điều chỉnh, đổi ngày, đổi giờ (thời gian bắt đầu/kết thúc), dời lịch hoặc đổi tên/địa điểm/mức ưu tiên cho lịch hẹn/công việc đã có trong thời gian biểu.',
+  parameters: {
+    type: Type.OBJECT,
+    properties: {
+      eventId: { type: Type.STRING, description: 'Mã ID sự kiện cần điều chỉnh nếu có' },
+      titleKeyword: { type: Type.STRING, description: 'Từ khóa tìm kiếm tên sự kiện muốn sửa (VD: "lịch học MRI", "siêu âm", "đọc CLVT")' },
+      newDate: { type: Type.STRING, description: 'Ngày mới diễn ra theo định dạng YYYY-MM-DD (VD: "2026-08-14")' },
+      newDayOfWeek: { type: Type.INTEGER, description: 'Thứ mới trong tuần (1: Thứ 2, 2: Thứ 3, ..., 6: Thứ 7, 0: Chủ Nhật)' },
+      newStartTime: { type: Type.STRING, description: 'Giờ bắt đầu mới dạng HH:mm (VD: "20:00")' },
+      newEndTime: { type: Type.STRING, description: 'Giờ kết thúc mới dạng HH:mm (VD: "22:00")' },
+      newTitle: { type: Type.STRING, description: 'Tên công việc mới nếu muốn đổi tiêu đề' },
+      newLocation: { type: Type.STRING, description: 'Địa điểm mới nếu muốn thay đổi' },
+      newPriority: { type: Type.STRING, description: 'Mức ưu tiên mới (P1, P2, P3, P4)' },
+      newCategory: { type: Type.STRING, description: 'Phân loại nhóm mới (hospital, study, clinic, rest, personal)' },
+      newDescription: { type: Type.STRING, description: 'Ghi chú mới bổ sung' },
+    },
+  },
+};
+
 export const tinhKhangDemDeclaration: FunctionDeclaration = {
   name: 'tinh_khang_dem',
   description: 'Tính toán khoảng nghỉ đệm (Buffer time) và cảnh báo xung đột giữa ca bệnh viện và buổi học tối.',
@@ -300,6 +321,7 @@ ${formattedLearnedPrompt}
           {
             functionDeclarations: [
               taoLichHenDeclaration,
+              dieuChinhLichHenDeclaration,
               capNhatUuTienDeclaration,
               xoaLichHenDeclaration,
               tinhKhangDemDeclaration,
@@ -348,6 +370,16 @@ ${formattedLearnedPrompt}
         }
 
         executedCall = { name, args, result: { success: true, createdEvent: newEvt } };
+      } else if (name === 'dieu_chinh_lich_hen') {
+        const titleStr = args.newTitle || args.titleKeyword || 'công việc';
+        const dateStr = args.newDate ? `ngày **${args.newDate}**` : '';
+        const dayStr = args.newDayOfWeek !== undefined ? `Thứ ${args.newDayOfWeek === 0 ? 'Chủ Nhật' : args.newDayOfWeek + 1}` : '';
+        const timeStr = args.newStartTime ? `lúc **${args.newStartTime}${args.newEndTime ? ' - ' + args.newEndTime : ''}**` : '';
+
+        replyText =
+          replyText ||
+          `✅ Em đã điều chỉnh thời gian biểu cho **${titleStr}** sang ${dateStr || dayStr} ${timeStr} thành công theo yêu cầu của Bác sĩ!`;
+        executedCall = { name, args, result: { success: true } };
       } else if (name === 'cap_nhat_uu_tien') {
         const priority = args.newPriority as PriorityLevel;
         replyText =

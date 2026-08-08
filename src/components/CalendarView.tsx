@@ -1519,13 +1519,33 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-2 sm:gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+                <div>
+                  <label className="block text-slate-300 font-medium mb-1">Ngày Diễn Ra</label>
+                  <input
+                    type="date"
+                    value={editingEvent.date || ''}
+                    onChange={(e) => {
+                      const newDateStr = e.target.value;
+                      if (!newDateStr) return;
+                      const parsed = new Date(newDateStr);
+                      const dOfWeek = parsed.getDay();
+                      setEditingEvent({
+                        ...editingEvent,
+                        date: newDateStr,
+                        dayOfWeek: dOfWeek,
+                      });
+                    }}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-2 text-slate-100 focus:outline-none focus:border-indigo-500 font-mono text-xs"
+                  />
+                </div>
+
                 <div>
                   <label className="block text-slate-300 font-medium mb-1">Thứ Trong Tuần</label>
                   <select
                     value={editingEvent.dayOfWeek}
                     onChange={(e) => setEditingEvent({ ...editingEvent, dayOfWeek: Number(e.target.value) })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-2 text-slate-100 focus:outline-none focus:border-indigo-500"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-2 text-slate-100 focus:outline-none focus:border-indigo-500 text-xs"
                   >
                     <option value={1}>Thứ Hai</option>
                     <option value={2}>Thứ Ba</option>
@@ -1543,7 +1563,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                     type="time"
                     value={editingEvent.startTime}
                     onChange={(e) => setEditingEvent({ ...editingEvent, startTime: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-2 py-2 text-slate-100 focus:outline-none focus:border-indigo-500 font-mono"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-2 py-2 text-slate-100 focus:outline-none focus:border-indigo-500 font-mono text-xs"
                   />
                 </div>
 
@@ -1553,8 +1573,68 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                     type="time"
                     value={editingEvent.endTime}
                     onChange={(e) => setEditingEvent({ ...editingEvent, endTime: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-2 py-2 text-slate-100 focus:outline-none focus:border-indigo-500 font-mono"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-2 py-2 text-slate-100 focus:outline-none focus:border-indigo-500 font-mono text-xs"
                   />
+                </div>
+              </div>
+
+              {/* Quick Date/Time Reschedule Shift Buttons */}
+              <div className="bg-slate-950/80 p-2.5 rounded-xl border border-slate-800 space-y-1.5">
+                <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider block">
+                  ⚡ Điều chỉnh nhanh ngày & giờ:
+                </span>
+                <div className="flex flex-wrap gap-1.5 text-[11px]">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const cur = editingEvent.date ? new Date(editingEvent.date) : new Date();
+                      cur.setDate(cur.getDate() + 1);
+                      const iso = formatDateISO(cur);
+                      setEditingEvent({ ...editingEvent, date: iso, dayOfWeek: cur.getDay() });
+                    }}
+                    className="bg-slate-800 hover:bg-slate-700 text-indigo-300 px-2 py-1 rounded-lg border border-slate-700 transition-colors"
+                  >
+                    📅 +1 Ngày (Lùi 1 ngày)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const cur = editingEvent.date ? new Date(editingEvent.date) : new Date();
+                      cur.setDate(cur.getDate() - 1);
+                      const iso = formatDateISO(cur);
+                      setEditingEvent({ ...editingEvent, date: iso, dayOfWeek: cur.getDay() });
+                    }}
+                    className="bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-1 rounded-lg border border-slate-700 transition-colors"
+                  >
+                    📅 -1 Ngày (Tiến 1 ngày)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingEvent({ ...editingEvent, startTime: '07:30', endTime: '12:00' });
+                    }}
+                    className="bg-slate-800 hover:bg-slate-700 text-cyan-300 px-2 py-1 rounded-lg border border-slate-700 transition-colors"
+                  >
+                    🌅 Ca Sáng (07:30 - 12:00)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingEvent({ ...editingEvent, startTime: '13:30', endTime: '16:30' });
+                    }}
+                    className="bg-slate-800 hover:bg-slate-700 text-amber-300 px-2 py-1 rounded-lg border border-slate-700 transition-colors"
+                  >
+                    🌆 Ca Chiều (13:30 - 16:30)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingEvent({ ...editingEvent, startTime: '19:30', endTime: '21:30' });
+                    }}
+                    className="bg-slate-800 hover:bg-slate-700 text-purple-300 px-2 py-1 rounded-lg border border-slate-700 transition-colors"
+                  >
+                    🌙 Ca Tối (19:30 - 21:30)
+                  </button>
                 </div>
               </div>
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ScheduleEvent, ChatMessage, PriorityLevel, AppSettings, DEFAULT_APP_SETTINGS } from './types';
+import { ScheduleEvent, ChatMessage, PriorityLevel, EventCategory, AppSettings, DEFAULT_APP_SETTINGS } from './types';
 import { INITIAL_EVENTS } from './data/initialData';
 import { Navbar } from './components/Navbar';
 import { CalendarView } from './components/CalendarView';
@@ -219,6 +219,33 @@ export default function App() {
               if (prev.some(e => e.id === created.id)) return prev;
               return [...prev, created as ScheduleEvent];
             });
+          }
+        } else if (name === 'dieu_chinh_lich_hen') {
+          const kw = (args.titleKeyword || '').toLowerCase();
+          const targetEvtId = args.eventId;
+          const toUpdate = events.filter((e) =>
+            (targetEvtId && e.id === targetEvtId) || (kw && e.title.toLowerCase().includes(kw))
+          );
+
+          for (const evt of toUpdate) {
+            const updates: Partial<ScheduleEvent> = {};
+            if (args.newTitle) updates.title = args.newTitle;
+            if (args.newDate) updates.date = args.newDate;
+            if (args.newDayOfWeek !== undefined) updates.dayOfWeek = Number(args.newDayOfWeek);
+            if (args.newStartTime) updates.startTime = args.newStartTime;
+            if (args.newEndTime) updates.endTime = args.newEndTime;
+            if (args.newLocation) updates.location = args.newLocation;
+            if (args.newPriority) {
+              updates.priority = args.newPriority;
+              updates.priorityName = settings.prioritySettings[args.newPriority as PriorityLevel]?.name || args.newPriority;
+            }
+            if (args.newCategory) {
+              updates.category = args.newCategory;
+              updates.categoryLabel = settings.categoryLabels[args.newCategory as EventCategory] || args.newCategory;
+            }
+            if (args.newDescription) updates.description = args.newDescription;
+
+            await handleUpdateEvent(evt.id, updates);
           }
         } else if (name === 'xoa_lich_hen') {
           const kw = (args.titleKeyword || '').toLowerCase();

@@ -107,10 +107,16 @@ export const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({
           + Lịch học MRI T3
         </button>
         <button
-          onClick={() => handleChipClick('Dời buổi đọc CLVT sang tối T5')}
-          className="bg-slate-800 hover:bg-slate-700 text-purple-300 px-2.5 py-1 rounded-full text-[11px] shrink-0 border border-slate-700/80 transition-all"
+          onClick={() => handleChipClick('Đổi lịch học MRI từ tối T3 sang tối T5 từ 20:00 - 22:00')}
+          className="bg-slate-800 hover:bg-slate-700 text-purple-300 px-2.5 py-1 rounded-full text-[11px] shrink-0 border border-slate-700/80 transition-all font-semibold"
         >
-          Dời CLVT T5
+          🔄 Đổi lịch MRI sang T5
+        </button>
+        <button
+          onClick={() => handleChipClick('Dời lịch siêu âm phòng 11 ngày 11/08 sang ngày 12/08 lúc 08h00')}
+          className="bg-slate-800 hover:bg-slate-700 text-cyan-300 px-2.5 py-1 rounded-full text-[11px] shrink-0 border border-slate-700/80 transition-all font-semibold"
+        >
+          📅 Dời Siêu âm sang 12/08
         </button>
         <button
           onClick={() => handleChipClick('Cảnh báo nếu lịch học chen vào tối nghỉ ngơi P4')}
@@ -170,6 +176,8 @@ export const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({
                         <span className="font-bold text-slate-200">
                           {msg.functionCalled.name === 'tao_lich_hen'
                             ? '⚡ Đã tự động tạo lịch hẹn'
+                            : msg.functionCalled.name === 'dieu_chinh_lich_hen'
+                            ? '📅 Đã điều chỉnh / dời lịch hẹn'
                             : msg.functionCalled.name === 'cap_nhat_uu_tien'
                             ? '✏️ Đã cập nhật mức ưu tiên'
                             : msg.functionCalled.name === 'xoa_lich_hen'
