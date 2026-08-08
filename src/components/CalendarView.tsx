@@ -675,20 +675,42 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
       {mainViewMode === 'week' && (
         <>
           {/* Mobile Day Selector Bar */}
-          <div className="bg-[#0F172A] border border-slate-800 rounded-2xl p-3 space-y-2 shadow-lg">
-            <div className="flex items-center justify-between text-xs font-semibold text-slate-300">
+          <div className="bg-[#0F172A] border border-slate-800 rounded-2xl p-3 space-y-2.5 shadow-lg">
+            <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-semibold text-slate-300">
               <span className="flex items-center gap-1.5 text-indigo-300">
                 <CalendarIcon className="w-4 h-4 text-indigo-400" />
                 <span>Xem Lịch Trên Điện Thoại:</span>
               </span>
-              {selectedMobileDay !== 'all' && (
-                <button
-                  onClick={() => setSelectedMobileDay('all')}
-                  className="text-xs text-indigo-400 hover:text-indigo-300 font-bold underline flex items-center gap-1"
-                >
-                  <span>Xem Cả 7 Ngày</span> 📊
-                </button>
-              )}
+
+              <div className="flex items-center gap-2">
+                {/* Direct Date Picker Input */}
+                <div className="flex items-center gap-1 bg-slate-950 px-2 py-1 rounded-xl border border-slate-800">
+                  <span className="text-[11px] text-slate-400 font-medium hidden xs:inline">Chọn Ngày:</span>
+                  <input
+                    type="date"
+                    value={formatDateISO(currentBaseDate)}
+                    onChange={(e) => {
+                      if (e.target.value) {
+                        const [y, m, d] = e.target.value.split('-').map(Number);
+                        const selectedDate = new Date(y, m - 1, d);
+                        setCurrentBaseDate(selectedDate);
+                        setSelectedMobileDay(selectedDate.getDay());
+                      }
+                    }}
+                    className="bg-transparent text-indigo-300 text-xs font-mono font-bold focus:outline-none cursor-pointer"
+                    title="Chọn ngày cụ thể trên lịch để xem ngay"
+                  />
+                </div>
+
+                {selectedMobileDay !== 'all' && (
+                  <button
+                    onClick={() => setSelectedMobileDay('all')}
+                    className="text-xs text-indigo-400 hover:text-indigo-300 font-bold underline flex items-center gap-1 shrink-0"
+                  >
+                    <span>Xem Cả 7 Ngày</span> 📊
+                  </button>
+                )}
+              </div>
             </div>
 
             <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-1">
@@ -702,21 +724,41 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
               >
                 Tất Cả 7 Ngày 📊
               </button>
-              {weekDays.map(({ dayOfWeek, short, dateStr }) => (
-                <button
-                  key={dayOfWeek}
-                  onClick={() => setSelectedMobileDay(dayOfWeek)}
-                  className={`px-3 py-1.5 text-xs font-bold rounded-xl whitespace-nowrap transition-all border shrink-0 ${
-                    selectedMobileDay === dayOfWeek
-                      ? 'bg-indigo-600 text-white border-indigo-500 shadow-md ring-2 ring-indigo-400/40'
-                      : dayOfWeek === 6 || dayOfWeek === 0
-                      ? 'bg-amber-950/30 text-amber-300 border-amber-800/60'
-                      : 'bg-slate-950 text-slate-300 border-slate-800 hover:text-white'
-                  }`}
-                >
-                  {short} ({dateStr})
-                </button>
-              ))}
+              {weekDays.map(({ dayOfWeek, short, dateStr, isoStr }) => {
+                const dayEvtsCount = filteredEvents.filter(
+                  (e) => (e.date ? e.date === isoStr : e.dayOfWeek === dayOfWeek)
+                ).length;
+                const isSelected = selectedMobileDay === dayOfWeek;
+                const isToday = isoStr === formatDateISO(new Date());
+
+                return (
+                  <button
+                    key={dayOfWeek}
+                    onClick={() => setSelectedMobileDay(dayOfWeek)}
+                    className={`px-3 py-1.5 text-xs font-bold rounded-xl whitespace-nowrap transition-all border shrink-0 flex items-center gap-1.5 ${
+                      isSelected
+                        ? 'bg-indigo-600 text-white border-indigo-500 shadow-md ring-2 ring-indigo-400/40'
+                        : dayOfWeek === 6 || dayOfWeek === 0
+                        ? 'bg-amber-950/30 text-amber-300 border-amber-800/60'
+                        : 'bg-slate-950 text-slate-300 border-slate-800 hover:text-white'
+                    }`}
+                  >
+                    <span>{short} ({dateStr})</span>
+                    {dayEvtsCount > 0 && (
+                      <span
+                        className={`px-1.5 py-0.2 text-[10px] rounded-full font-mono font-extrabold ${
+                          isSelected ? 'bg-indigo-950 text-indigo-200' : 'bg-slate-800 text-indigo-300'
+                        }`}
+                      >
+                        {dayEvtsCount}
+                      </span>
+                    )}
+                    {isToday && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" title="Hôm nay"></span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -741,18 +783,52 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
               )
               .sort((a, b) => a.startTime.localeCompare(b.startTime));
 
+            const handlePrevDayNav = () => {
+              const prev = new Date(targetDayObj.dateObj);
+              prev.setDate(prev.getDate() - 1);
+              setCurrentBaseDate(prev);
+              setSelectedMobileDay(prev.getDay());
+            };
+
+            const handleNextDayNav = () => {
+              const next = new Date(targetDayObj.dateObj);
+              next.setDate(next.getDate() + 1);
+              setCurrentBaseDate(next);
+              setSelectedMobileDay(next.getDay());
+            };
+
             return (
               <div className="bg-[#0F172A] border border-slate-800 rounded-2xl p-3.5 sm:p-5 space-y-4 shadow-xl">
-                <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-                  <div>
-                    <h3 className="font-bold text-base text-slate-100 flex items-center gap-2">
-                      <span>{targetDayObj.label}</span>
-                      <span className="text-xs text-indigo-300 font-mono">({targetDayObj.dateStr})</span>
-                    </h3>
-                    <p className="text-xs text-slate-400 mt-0.5">
-                      Tổng số: {daytimeEvts.length + eveningEvts.length} lịch hẹn & công việc trong ngày
-                    </p>
+                <div className="flex items-center justify-between pb-3 border-b border-slate-800 flex-wrap gap-2">
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={handlePrevDayNav}
+                        className="p-1.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-300 rounded-xl transition-colors active:scale-95"
+                        title="Ngày trước"
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={handleNextDayNav}
+                        className="p-1.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-300 rounded-xl transition-colors active:scale-95"
+                        title="Ngày tiếp"
+                      >
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    <div>
+                      <h3 className="font-bold text-base text-slate-100 flex items-center gap-2">
+                        <span>{targetDayObj.label}</span>
+                        <span className="text-xs text-indigo-300 font-mono">({targetDayObj.dateStr})</span>
+                      </h3>
+                      <p className="text-xs text-slate-400 mt-0.5">
+                        Tổng số: {daytimeEvts.length + eveningEvts.length} lịch hẹn & công việc
+                      </p>
+                    </div>
                   </div>
+
                   <button
                     onClick={() => handleSlotDoubleClick(targetDayObj.dayOfWeek, targetDayObj.isoStr, false)}
                     className="bg-indigo-600 hover:bg-indigo-500 text-white text-xs px-3 py-1.5 rounded-xl font-bold flex items-center gap-1 shadow-md active:scale-95 transition-all"
