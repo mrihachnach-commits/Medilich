@@ -714,16 +714,13 @@ ${formattedLearnedPrompt}
         const sourceEvents = scheduleEvents.filter((evt) => {
           if (titleKw && evt.title.toLowerCase().includes(titleKw)) return true;
           if (srcDate) {
-            // Strict match for date
-            if (evt.date === srcDate) return true;
-            
-            // Handle date formats
-            if (srcDate.includes('/')) {
+            if (evt.date === srcDate || srcDate.includes(evt.date) || evt.date.includes(srcDate)) return true;
+            if (srcDate.includes('/') && evt.date) {
               const parts = srcDate.split('/');
               if (parts.length >= 2) {
                 const dayP = parts[0].padStart(2, '0');
                 const monthP = parts[1].padStart(2, '0');
-                if (evt.date && evt.date.endsWith(`-${monthP}-${dayP}`)) return true;
+                if (evt.date.endsWith(`-${monthP}-${dayP}`)) return true;
               }
             }
           }
