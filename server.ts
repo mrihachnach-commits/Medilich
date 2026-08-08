@@ -255,7 +255,7 @@ const saoChepLichHenDeclaration: FunctionDeclaration = {
 
 const hoanTacThaoTacDeclaration: FunctionDeclaration = {
   name: 'hoan_tac_thao_tac',
-  description: 'Hoàn tác (Undo) lại thao tác chỉnh sửa, thêm, sửa, dời, copy hoặc xóa lịch gần nhất vừa thực hiện.',
+  description: 'CHỈ SỬ DỤNG LỆNH NÀY KHI CẦN HOÀN TÁC (UNDO). Lệnh này sẽ HỦY BỎ thao tác gần nhất vừa thực hiện. KHÔNG ĐƯỢC thực hiện kèm theo bất kỳ lệnh nào khác cùng lúc.',
   parameters: {
     type: Type.OBJECT,
     properties: {
@@ -714,13 +714,16 @@ ${formattedLearnedPrompt}
         const sourceEvents = scheduleEvents.filter((evt) => {
           if (titleKw && evt.title.toLowerCase().includes(titleKw)) return true;
           if (srcDate) {
-            if (evt.date === srcDate || srcDate.includes(evt.date) || evt.date.includes(srcDate)) return true;
-            if (srcDate.includes('/') && evt.date) {
+            // Strict match for date
+            if (evt.date === srcDate) return true;
+            
+            // Handle date formats
+            if (srcDate.includes('/')) {
               const parts = srcDate.split('/');
               if (parts.length >= 2) {
                 const dayP = parts[0].padStart(2, '0');
                 const monthP = parts[1].padStart(2, '0');
-                if (evt.date.endsWith(`-${monthP}-${dayP}`)) return true;
+                if (evt.date && evt.date.endsWith(`-${monthP}-${dayP}`)) return true;
               }
             }
           }

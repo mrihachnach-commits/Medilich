@@ -129,7 +129,7 @@ export const saoChepLichHenDeclaration: FunctionDeclaration = {
 
 export const hoanTacThaoTacDeclaration: FunctionDeclaration = {
   name: 'hoan_tac_thao_tac',
-  description: 'Hoàn tác (Undo) lại thao tác chỉnh sửa, thêm, sửa, dời, copy hoặc xóa lịch gần nhất vừa thực hiện.',
+  description: 'CHỈ SỬ DỤNG LỆNH NÀY KHI CẦN HOÀN TÁC (UNDO). Lệnh này sẽ HỦY BỎ thao tác gần nhất vừa thực hiện. KHÔNG ĐƯỢC thực hiện kèm theo bất kỳ lệnh nào khác cùng lúc.',
   parameters: {
     type: Type.OBJECT,
     properties: {
